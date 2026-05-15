@@ -19,6 +19,7 @@ import InvoiceDetail from "./pages/InvoiceDetail";
  import AdminPanel from "./pages/AdminPanel";
  import ThemeSettings from "./pages/ThemeSettings";
  import BrandingSettings from "./pages/BrandingSettings";
+ import InvoiceLayoutSettings from "./pages/InvoiceLayoutSettings";
  import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
              <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPanel /></ProtectedRoute>} />
              <Route path="/admin/theme" element={<ProtectedRoute requireAdmin><ThemeSettings /></ProtectedRoute>} />
              <Route path="/admin/branding" element={<ProtectedRoute requireAdmin><BrandingSettings /></ProtectedRoute>} />
+             <Route path="/admin/invoice-layout" element={<ProtectedRoute requireAdmin><InvoiceLayoutSettings /></ProtectedRoute>} />
              
              {/* Protected routes */}
              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

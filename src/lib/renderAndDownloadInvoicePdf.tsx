@@ -3,6 +3,7 @@ import { ThemedInvoiceDocument } from "@/components/invoice/ThemedInvoiceDocumen
 import { generateInvoicePdfFromDom } from "@/lib/generateInvoicePdfFromDom";
 import { ThemeSettings } from "@/types/theme";
 import { BrandSettings } from "@/types/branding";
+import { InvoiceLayout } from "@/types/invoiceLayout";
 
 interface RenderArgs {
   invoice: any;
@@ -11,6 +12,7 @@ interface RenderArgs {
   company: any;
   theme: ThemeSettings;
   branding: BrandSettings | null | undefined;
+  layout?: InvoiceLayout;
   filename: string;
 }
 

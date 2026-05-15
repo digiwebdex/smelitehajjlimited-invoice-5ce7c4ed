@@ -194,5 +194,6 @@ export async function generateInvoicePdfFromDom(
     isFirst = false;
   }
 
+  if (output === "blob") return pdf.output("blob");
   pdf.save(filename);
 }

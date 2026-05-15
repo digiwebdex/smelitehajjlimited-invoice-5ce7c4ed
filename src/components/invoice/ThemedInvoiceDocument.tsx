@@ -3,6 +3,7 @@ import { ThemeSettings, defaultTheme } from "@/types/theme";
 import { BrandSettings, defaultBranding } from "@/types/branding";
 import { numberToWords } from "@/lib/numberToWords";
 import { getInvoiceFooterDetails } from "@/lib/invoiceFooter";
+import { InvoiceLayout, defaultInvoiceLayout } from "@/types/invoiceLayout";
 
 const getOrdinal = (n: number): string => {
   const suffixes = ["th", "st", "nd", "rd"];

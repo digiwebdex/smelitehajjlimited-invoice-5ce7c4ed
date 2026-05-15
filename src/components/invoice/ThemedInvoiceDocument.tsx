@@ -424,62 +424,64 @@ export const ThemedInvoiceDocument = ({
       >
         <div style={{ width: "62%" }}>
           {[
-            { label: "Subtotal", value: invoice.subtotal, muted: true },
-            { label: "VAT", value: invoice.vat_amount, muted: true },
-            { label: "Total", value: invoice.total_amount, bold: true },
-            {
-              label: "Total Paid",
-              value: invoice.paid_amount,
-              color: "#16a34a",
-            },
-          ].map((row) => (
+            { label: "Subtotal", value: invoice.subtotal, muted: true, show: L.body.showSubtotal },
+            { label: L.body.vatLabel, value: invoice.vat_amount, muted: true, show: L.body.showVat },
+            { label: "Total", value: invoice.total_amount, bold: true, show: L.body.showTotal },
+            { label: "Total Paid", value: invoice.paid_amount, color: "#16a34a", show: L.body.showPaid },
+          ]
+            .filter((row) => row.show)
+            .map((row) => (
+              <div
+                key={row.label}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "6px 0",
+                  fontSize: "10.5pt",
+                  color: row.color || (row.muted ? "#64748b" : "#0f172a"),
+                  fontWeight: row.bold ? 700 : row.color ? 600 : 400,
+                }}
+              >
+                <span>{row.label}</span>
+                <span>{formatCurrency(row.value)}</span>
+              </div>
+            ))}
+
+          {L.body.showBalance && (
             <div
-              key={row.label}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                padding: "6px 0",
-                fontSize: "10.5pt",
-                color: row.color || (row.muted ? "#64748b" : "#0f172a"),
-                fontWeight: row.bold ? 700 : row.color ? 600 : 400,
+                alignItems: "center",
+                marginTop: "8px",
+                padding: "12px 14px",
+                backgroundColor: isPaidInFull ? "#dcfce7" : "#0f172a",
+                color: isPaidInFull ? "#166534" : "#ffffff",
+                borderRadius: "6px",
+                fontSize: "12pt",
+                fontWeight: 700,
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact",
               }}
             >
-              <span>{row.label}</span>
-              <span>{formatCurrency(row.value)}</span>
+              <span>{isPaidInFull ? "Paid in Full" : "Balance Due"}</span>
+              <span>{formatCurrency(invoice.due_amount)}</span>
             </div>
-          ))}
+          )}
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: "8px",
-              padding: "12px 14px",
-              backgroundColor: isPaidInFull ? "#dcfce7" : "#0f172a",
-              color: isPaidInFull ? "#166534" : "#ffffff",
-              borderRadius: "6px",
-              fontSize: "12pt",
-              fontWeight: 700,
-              WebkitPrintColorAdjust: "exact",
-              printColorAdjust: "exact",
-            }}
-          >
-            <span>{isPaidInFull ? "Paid in Full" : "Balance Due"}</span>
-            <span>{formatCurrency(invoice.due_amount)}</span>
-          </div>
-
-          <div
-            style={{
-              marginTop: "8px",
-              fontSize: "9pt",
-              color: "#64748b",
-              wordBreak: "break-word",
-            }}
-          >
-            <span style={{ fontWeight: 600 }}>In Word: </span>
-            {numberToWords(wordsAmount)} Taka Only
-          </div>
+          {L.body.showInWords && (
+            <div
+              style={{
+                marginTop: "8px",
+                fontSize: "9pt",
+                color: "#64748b",
+                wordBreak: "break-word",
+              }}
+            >
+              <span style={{ fontWeight: 600 }}>In Word: </span>
+              {numberToWords(wordsAmount)} Taka Only
+            </div>
+          )}
         </div>
       </section>
 

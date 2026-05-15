@@ -486,7 +486,7 @@ export const ThemedInvoiceDocument = ({
       </section>
 
       {/* NOTES */}
-      {invoice.notes && (
+      {L.body.showNotes && invoice.notes && (
         <section
           className="invoice-keep-together"
           style={{
@@ -522,7 +522,7 @@ export const ThemedInvoiceDocument = ({
       )}
 
       {/* PAYMENT HISTORY */}
-      {installments.length > 0 && (
+      {L.body.showPaymentHistory && installments.length > 0 && (
         <section
           className="invoice-keep-together"
           style={{ marginBottom: "10mm" }}
@@ -583,114 +583,120 @@ export const ThemedInvoiceDocument = ({
         </section>
       )}
 
-      {/* FOOTER BLOCK — signatures + thank-you + address + QR.
-          Single break-inside:avoid block guarantees it lands on the
-          last page only. */}
+      {/* FOOTER BLOCK */}
       <footer
         data-pdf-footer
         className="invoice-footer-block invoice-keep-together"
-        style={{ marginTop: "auto", paddingTop: "6mm" }}
+        style={{ marginTop: "auto", paddingTop: `${L.footer.paddingTop}mm` }}
       >
         {/* Signatures */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "10mm",
-            marginBottom: "6mm",
-          }}
-        >
-          {[
-            { label: "Received by", sig: b.signature_received_by },
-            { label: "Prepared by", sig: b.signature_prepared_by },
-            { label: "Authorize by", sig: b.signature_authorize_by },
-          ].map((item) => (
-            <div key={item.label} style={{ flex: 1, textAlign: "center" }}>
-              <div
-                style={{
-                  height: "59px",
-                  display: "flex",
-                  alignItems: "flex-end",
-                  justifyContent: "center",
-                  marginBottom: "2px",
-                  position: "relative",
-                  zIndex: 1,
-                  overflow: "visible",
-                }}
-              >
-                {item.sig && (
-                  <img
-                    src={item.sig}
-                    alt={item.label}
-                    style={{
-                      height: "59px",
-                      maxWidth: "85%",
-                      objectFit: "contain",
-                      display: "block",
-                    }}
-                  />
-                )}
+        {L.footer.showSignatures && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: `${L.footer.signatureGap}mm`,
+              marginBottom: "6mm",
+            }}
+          >
+            {[
+              { label: L.footer.signatureLabels.received, sig: b.signature_received_by },
+              { label: L.footer.signatureLabels.prepared, sig: b.signature_prepared_by },
+              { label: L.footer.signatureLabels.authorize, sig: b.signature_authorize_by },
+            ].map((item) => (
+              <div key={item.label} style={{ flex: 1, textAlign: "center" }}>
+                <div
+                  style={{
+                    height: `${L.footer.signatureHeight}px`,
+                    display: "flex",
+                    alignItems: "flex-end",
+                    justifyContent: "center",
+                    marginBottom: "2px",
+                    position: "relative",
+                    zIndex: 1,
+                    overflow: "visible",
+                  }}
+                >
+                  {item.sig && (
+                    <img
+                      src={item.sig}
+                      alt={item.label}
+                      style={{
+                        height: `${L.footer.signatureHeight}px`,
+                        maxWidth: "85%",
+                        objectFit: "contain",
+                        display: "block",
+                      }}
+                    />
+                  )}
+                </div>
+                <div
+                  style={{
+                    borderTop: "1px solid #475569",
+                    paddingTop: "8px",
+                    fontSize: "9pt",
+                    color: "#64748b",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {item.label}
+                </div>
               </div>
-              <div
-                style={{
-                  borderTop: "1px solid #475569",
-                  paddingTop: "8px",
-                  fontSize: "9pt",
-                  color: "#64748b",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                {item.label}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Thank-you */}
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: "10pt",
-            color: "#475569",
-            marginBottom: "5mm",
-          }}
-        >
-          {footerThankYou}
-        </div>
+        {L.footer.showThankYou && (
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "10pt",
+              color: "#475569",
+              marginBottom: "5mm",
+            }}
+          >
+            {footerThankYou}
+          </div>
+        )}
 
         {/* Address + QR */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            gap: "10mm",
-            paddingTop: "4mm",
-            borderTop: "1px solid #e2e8f0",
-          }}
-        >
-          <div style={{ fontSize: "8.5pt", color: "#64748b", lineHeight: 1.6 }}>
-            {addressLine1 && <div>{addressLine1}</div>}
-            {addressLine2 && <div>{addressLine2}</div>}
-            {(footerPhone || footerEmail) && (
-              <div>
-                {[footerPhone, footerEmail].filter(Boolean).join(" · ")}
+        {(L.footer.showAddress || L.footer.showQR) && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              gap: "10mm",
+              paddingTop: "4mm",
+              borderTop: "1px solid #e2e8f0",
+            }}
+          >
+            {L.footer.showAddress ? (
+              <div style={{ fontSize: `${L.footer.fontSize}pt`, color: "#64748b", lineHeight: 1.6 }}>
+                {addressLine1 && <div>{addressLine1}</div>}
+                {addressLine2 && <div>{addressLine2}</div>}
+                {L.footer.showContact && (footerPhone || footerEmail) && (
+                  <div>
+                    {[footerPhone, footerEmail].filter(Boolean).join(" · ")}
+                  </div>
+                )}
+                {L.footer.showWebsite && footerWebsite && (
+                  <div style={{ color: t.primary_color }}>{footerWebsite}</div>
+                )}
               </div>
-            )}
-            {footerWebsite && (
-              <div style={{ color: t.primary_color }}>{footerWebsite}</div>
+            ) : <div />}
+
+            {L.footer.showQR && showQR && (
+              <div style={{ textAlign: "center" }}>
+                <InvoiceQRCode invoiceId={invoice.id} size={L.footer.qrSize} showLabel={false} />
+                <div style={{ fontSize: "7pt", color: "#94a3b8", marginTop: "3px" }}>
+                  Scan for details
+                </div>
+              </div>
             )}
           </div>
-
-          {showQR && (
-            <div style={{ textAlign: "center" }}>
-              <InvoiceQRCode invoiceId={invoice.id} size={64} showLabel={false} />
-              <div style={{ fontSize: "7pt", color: "#94a3b8", marginTop: "3px" }}>
-                Scan for details
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </footer>
     </div>
   );

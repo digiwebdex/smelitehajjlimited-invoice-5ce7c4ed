@@ -567,34 +567,41 @@ export const ThemedInvoiceDocument = ({
           {[
             { label: "Received by", sig: b.signature_received_by },
             { label: "Prepared by", sig: b.signature_prepared_by },
-            { label: "Authorized by", sig: b.signature_authorize_by },
+            { label: "Authorize by", sig: b.signature_authorize_by },
           ].map((item) => (
             <div key={item.label} style={{ flex: 1, textAlign: "center" }}>
               <div
                 style={{
-                  height: "60px",
+                  height: "55px",
                   display: "flex",
                   alignItems: "flex-end",
                   justifyContent: "center",
-                  marginBottom: "-14px",
+                  marginBottom: "2px",
                   position: "relative",
                   zIndex: 1,
+                  overflow: "visible",
                 }}
               >
                 {item.sig && (
                   <img
                     src={item.sig}
                     alt={item.label}
-                    style={{ height: "60px", maxWidth: "100%", objectFit: "contain" }}
+                    style={{
+                      height: "55px",
+                      maxWidth: "85%",
+                      objectFit: "contain",
+                      display: "block",
+                    }}
                   />
                 )}
               </div>
               <div
                 style={{
                   borderTop: "1px solid #475569",
-                  paddingTop: "6px",
+                  paddingTop: "8px",
                   fontSize: "9pt",
                   color: "#64748b",
+                  letterSpacing: "0.02em",
                 }}
               >
                 {item.label}

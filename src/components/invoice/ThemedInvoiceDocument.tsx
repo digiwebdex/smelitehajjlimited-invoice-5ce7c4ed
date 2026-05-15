@@ -304,93 +304,114 @@ export const ThemedInvoiceDocument = ({
       )}
 
       {/* ITEM TABLE */}
-      <table
-        className="invoice-items"
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginBottom: "8mm",
-        }}
-      >
-        <colgroup>
-          <col style={{ width: "54%" }} />
-          <col style={{ width: "10%" }} />
-          <col style={{ width: "18%" }} />
-          <col style={{ width: "18%" }} />
-        </colgroup>
-        <thead>
-          <tr>
-            {["Description", "Qty", "Unit Price", "Amount"].map((h, i) => (
-              <th
-                key={h}
-                style={{
-                  textAlign: i >= 2 ? "right" : i === 1 ? "center" : "left",
-                  padding: "10px 4px",
-                  fontSize: "8pt",
-                  fontWeight: 600,
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  borderBottom: "1px solid #e2e8f0",
-                }}
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.id} className="invoice-row">
-              <td
-                style={{
-                  padding: "9px 4px",
-                  fontSize: "10.5pt",
-                  color: "#0f172a",
-                  fontWeight: 500,
-                  borderBottom: "1px solid #f1f5f9",
-                }}
-              >
-                {item.title || "—"}
-              </td>
-              <td
-                style={{
-                  padding: "9px 4px",
-                  fontSize: "10.5pt",
-                  color: "#475569",
-                  textAlign: "center",
-                  borderBottom: "1px solid #f1f5f9",
-                }}
-              >
-                {item.qty || 1}
-              </td>
-              <td
-                style={{
-                  padding: "9px 4px",
-                  fontSize: "10.5pt",
-                  color: "#475569",
-                  textAlign: "right",
-                  borderBottom: "1px solid #f1f5f9",
-                }}
-              >
-                {formatCurrency(item.unit_price || item.amount)}
-              </td>
-              <td
-                style={{
-                  padding: "9px 4px",
-                  fontSize: "10.5pt",
-                  color: "#0f172a",
-                  textAlign: "right",
-                  fontWeight: 600,
-                  borderBottom: "1px solid #f1f5f9",
-                }}
-              >
-                {formatCurrency(item.amount)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {(() => {
+        const cols: Array<{
+          key: "description" | "qty" | "unitPrice" | "amount";
+          show: boolean;
+          width: number;
+          align: "left" | "center" | "right";
+          label: string;
+          render: (item: InvoiceItemData) => React.ReactNode;
+          tdColor: string;
+          tdWeight: number;
+        }> = [
+          {
+            key: "description",
+            show: true,
+            width: L.body.colWidths.description,
+            align: "left",
+            label: L.body.colLabels.description,
+            render: (item) => item.title || "—",
+            tdColor: "#0f172a",
+            tdWeight: 500,
+          },
+          {
+            key: "qty",
+            show: L.body.showQty,
+            width: L.body.colWidths.qty,
+            align: "center",
+            label: L.body.colLabels.qty,
+            render: (item) => item.qty || 1,
+            tdColor: "#475569",
+            tdWeight: 400,
+          },
+          {
+            key: "unitPrice",
+            show: L.body.showUnitPrice,
+            width: L.body.colWidths.unitPrice,
+            align: "right",
+            label: L.body.colLabels.unitPrice,
+            render: (item) => formatCurrency(item.unit_price || item.amount),
+            tdColor: "#475569",
+            tdWeight: 400,
+          },
+          {
+            key: "amount",
+            show: L.body.showAmount,
+            width: L.body.colWidths.amount,
+            align: "right",
+            label: L.body.colLabels.amount,
+            render: (item) => formatCurrency(item.amount),
+            tdColor: "#0f172a",
+            tdWeight: 600,
+          },
+        ];
+        const visible = cols.filter((c) => c.show);
+        return (
+          <table
+            className="invoice-items"
+            style={{ width: "100%", borderCollapse: "collapse", marginBottom: "8mm" }}
+          >
+            <colgroup>
+              {visible.map((c) => (
+                <col key={c.key} style={{ width: `${c.width}%` }} />
+              ))}
+            </colgroup>
+            <thead>
+              <tr>
+                {visible.map((c) => (
+                  <th
+                    key={c.key}
+                    style={{
+                      textAlign: c.align,
+                      padding: `10px ${L.body.rowPaddingX}px`,
+                      fontSize: `${L.body.tableHeaderSize}pt`,
+                      fontWeight: 600,
+                      color: "#94a3b8",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      borderBottom: "1px solid #e2e8f0",
+                    }}
+                  >
+                    {c.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id} className="invoice-row">
+                  {visible.map((c) => (
+                    <td
+                      key={c.key}
+                      style={{
+                        padding: `${L.body.rowPaddingY}px ${L.body.rowPaddingX}px`,
+                        fontSize: `${L.body.tableFontSize}pt`,
+                        color: c.tdColor,
+                        textAlign: c.align,
+                        fontWeight: c.tdWeight,
+                        borderBottom: "1px solid #f1f5f9",
+                      }}
+                    >
+                      {c.render(item)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+      })()}
 
       {/* TOTALS */}
       <section

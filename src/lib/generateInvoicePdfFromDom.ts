@@ -102,8 +102,10 @@ const chooseSliceHeightPx = (
  */
 export async function generateInvoicePdfFromDom(
   element: HTMLElement,
-  filename: string
-): Promise<void> {
+  filename: string,
+  options: { output?: "save" | "blob" } = {}
+): Promise<Blob | void> {
+  const output = options.output ?? "save";
   const canvas = await html2canvas(element, {
     scale: 2,
     useCORS: true,
@@ -135,6 +137,7 @@ export async function generateInvoicePdfFromDom(
       undefined,
       "FAST"
     );
+    if (output === "blob") return pdf.output("blob");
     pdf.save(filename);
     return;
   }
@@ -191,5 +194,6 @@ export async function generateInvoicePdfFromDom(
     isFirst = false;
   }
 
+  if (output === "blob") return pdf.output("blob");
   pdf.save(filename);
 }

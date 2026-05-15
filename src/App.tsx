@@ -12,6 +12,7 @@ import CompanyBranding from "./pages/CompanyBranding";
 import Invoices from "./pages/Invoices";
 import InvoiceDetail from "./pages/InvoiceDetail";
  import InvoiceView from "./pages/InvoiceView";
+ import InvoicePreviewCompare from "./pages/InvoicePreviewCompare";
  import PublicInvoiceView from "./pages/PublicInvoiceView";
  import Login from "./pages/Login";
   import ResetPassword from "./pages/ResetPassword";
@@ -48,6 +49,7 @@ const App = () => (
              <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
              <Route path="/invoices/new" element={<ProtectedRoute><InvoiceDetail /></ProtectedRoute>} />
              <Route path="/invoices/:id" element={<ProtectedRoute><InvoiceView /></ProtectedRoute>} />
+             <Route path="/invoices/:id/preview" element={<ProtectedRoute><InvoicePreviewCompare /></ProtectedRoute>} />
              <Route path="/invoices/:id/edit" element={<ProtectedRoute><InvoiceDetail /></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, Printer, Share2, Copy, Mail, MessageCircle, Loader2, FileDown, PenLine } from "lucide-react";
+import { ArrowLeft, Pencil, Printer, Share2, Copy, Mail, MessageCircle, Loader2, FileDown, PenLine, Eye } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -167,6 +167,10 @@ export default function InvoiceView() {
             >
               {invoice.status}
             </span>
+            <Button variant="outline" onClick={() => navigate(`/invoices/${id}/preview`)}>
+              <Eye className="h-4 w-4 mr-2" />
+              Compare Preview
+            </Button>
             <Button variant="outline" onClick={handleDownloadPdf}>
               <FileDown className="h-4 w-4 mr-2" />
               Download Invoice

@@ -381,7 +381,7 @@ export const generateInvoicePdf = async (
 
   doc.setTextColor(...mutedColor);
   doc.setFont("helvetica", "normal");
-  doc.text("Tax", summaryX, yPos);
+  doc.text("VAT", summaryX, yPos);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
   doc.text(formatCurrency(vatAmount), pageWidth - margin, yPos, { align: "right" });

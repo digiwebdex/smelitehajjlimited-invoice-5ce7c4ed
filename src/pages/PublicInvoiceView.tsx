@@ -45,6 +45,7 @@ export default function PublicInvoiceView() {
 
   // Fetch branding
   const { data: branding, isLoading: brandingLoading } = useBranding();
+  const { layout: invoiceLayout } = useEffectiveInvoiceLayout(invoice?.company_id);
 
   const isLoading = invoiceLoading || companyLoading || themeLoading || brandingLoading;
   const activeTheme = theme || defaultTheme;

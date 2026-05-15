@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/apiClient";
 import { useTheme } from "@/hooks/useTheme";
 import { useBranding } from "@/hooks/useBranding";
+import { useEffectiveInvoiceLayout } from "@/hooks/useInvoiceLayout";
 import { ThemedInvoiceDocument } from "@/components/invoice/ThemedInvoiceDocument";
 import { renderAndDownloadInvoicePdf } from "@/lib/renderAndDownloadInvoicePdf";
 import { printInvoiceFromNode } from "@/lib/printInvoice";

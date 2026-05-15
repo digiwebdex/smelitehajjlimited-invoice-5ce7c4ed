@@ -13,6 +13,7 @@ import { useInvoice } from "@/hooks/useInvoices";
 import { useCompany } from "@/hooks/useCompanies";
 import { useTheme } from "@/hooks/useTheme";
 import { useBranding } from "@/hooks/useBranding";
+import { useEffectiveInvoiceLayout } from "@/hooks/useInvoiceLayout";
 import { useToast } from "@/hooks/use-toast";
 import { ThemedInvoiceDocument } from "@/components/invoice/ThemedInvoiceDocument";
 import { renderAndDownloadInvoicePdf } from "@/lib/renderAndDownloadInvoicePdf";

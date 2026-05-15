@@ -572,24 +572,26 @@ export const ThemedInvoiceDocument = ({
             <div key={item.label} style={{ flex: 1, textAlign: "center" }}>
               <div
                 style={{
-                  height: "100px",
+                  height: "60px",
                   display: "flex",
                   alignItems: "flex-end",
                   justifyContent: "center",
-                  marginBottom: "4px",
+                  marginBottom: "-14px",
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
                 {item.sig && (
                   <img
                     src={item.sig}
                     alt={item.label}
-                    style={{ height: "100px", maxWidth: "100%", objectFit: "contain" }}
+                    style={{ height: "60px", maxWidth: "100%", objectFit: "contain" }}
                   />
                 )}
               </div>
               <div
                 style={{
-                  borderTop: "1px solid #cbd5e1",
+                  borderTop: "1px solid #475569",
                   paddingTop: "6px",
                   fontSize: "9pt",
                   color: "#64748b",

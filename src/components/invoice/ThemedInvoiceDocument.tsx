@@ -65,6 +65,7 @@ interface ThemedInvoiceDocumentProps {
   company?: CompanyData | null;
   theme: ThemeSettings;
   branding?: BrandSettings | null;
+  layout?: InvoiceLayout;
   pdfMode?: boolean;
 }
 
@@ -82,9 +83,11 @@ export const ThemedInvoiceDocument = ({
   company,
   theme,
   branding,
+  layout,
 }: ThemedInvoiceDocumentProps) => {
   const t = theme || defaultTheme;
   const b = branding || defaultBranding;
+  const L = layout || defaultInvoiceLayout;
 
   const formatCurrency = (amount: number) =>
     `Tk ${new Intl.NumberFormat("en-BD", {

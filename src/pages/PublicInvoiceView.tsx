@@ -163,6 +163,7 @@ export default function PublicInvoiceView() {
             company={companyData}
             theme={activeTheme}
             branding={branding}
+            layout={invoiceLayout}
           />
         </div>
       </div>

@@ -12,6 +12,7 @@ import CompanyBranding from "./pages/CompanyBranding";
 import Invoices from "./pages/Invoices";
 import InvoiceDetail from "./pages/InvoiceDetail";
  import InvoiceView from "./pages/InvoiceView";
+ import InvoicePreviewCompare from "./pages/InvoicePreviewCompare";
  import PublicInvoiceView from "./pages/PublicInvoiceView";
  import Login from "./pages/Login";
   import ResetPassword from "./pages/ResetPassword";

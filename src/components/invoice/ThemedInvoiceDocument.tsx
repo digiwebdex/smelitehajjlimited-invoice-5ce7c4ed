@@ -616,7 +616,7 @@ export const ThemedInvoiceDocument = ({
             textAlign: "center",
             fontSize: "10pt",
             color: "#475569",
-            marginBottom: "8mm",
+            marginBottom: "5mm",
           }}
         >
           {footerThankYou}
@@ -629,7 +629,7 @@ export const ThemedInvoiceDocument = ({
             justifyContent: "space-between",
             alignItems: "flex-end",
             gap: "10mm",
-            paddingTop: "6mm",
+            paddingTop: "4mm",
             borderTop: "1px solid #e2e8f0",
           }}
         >

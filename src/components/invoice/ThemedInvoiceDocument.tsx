@@ -553,7 +553,7 @@ export const ThemedInvoiceDocument = ({
       <footer
         data-pdf-footer
         className="invoice-footer-block invoice-keep-together"
-        style={{ marginTop: "auto", paddingTop: "12mm" }}
+        style={{ marginTop: "auto", paddingTop: "6mm" }}
       >
         {/* Signatures */}
         <div
@@ -561,7 +561,7 @@ export const ThemedInvoiceDocument = ({
             display: "flex",
             justifyContent: "space-between",
             gap: "10mm",
-            marginBottom: "10mm",
+            marginBottom: "6mm",
           }}
         >
           {[

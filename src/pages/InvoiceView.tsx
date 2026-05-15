@@ -33,6 +33,7 @@ export default function InvoiceView() {
   const { data: company, isLoading: companyLoading } = useCompany(invoice?.company_id);
   const { data: theme, isLoading: themeLoading } = useTheme();
   const { data: branding, isLoading: brandingLoading } = useBranding();
+  const { layout: invoiceLayout } = useEffectiveInvoiceLayout(invoice?.company_id);
 
   const isLoading = invoiceLoading || companyLoading || themeLoading || brandingLoading;
   const activeTheme = theme || defaultTheme;

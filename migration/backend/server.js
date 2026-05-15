@@ -780,7 +780,69 @@ app.post('/api/branding/reset', authenticate, async (req, res) => {
 });
 
 // ============================================
-// SERVE FRONTEND (Production)
+// INVOICE LAYOUT CMS ROUTES
+// ============================================
+const LAYOUT_GLOBAL_ID = '00000000-0000-0000-0000-000000000010';
+
+async function ensureLayoutSchema() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS public.invoice_layout_settings (
+      id UUID PRIMARY KEY,
+      layout JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    INSERT INTO public.invoice_layout_settings (id, layout)
+      VALUES ('${LAYOUT_GLOBAL_ID}', '{}'::jsonb)
+      ON CONFLICT (id) DO NOTHING;
+    ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS invoice_layout JSONB;
+  `);
+}
+ensureLayoutSchema().catch((e) => console.error('[layout schema] error:', e.message));
+
+app.get('/api/invoice-layout', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT layout FROM invoice_layout_settings WHERE id = $1', [LAYOUT_GLOBAL_ID]);
+    res.json({ data: { layout: rows[0]?.layout || {} } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/invoice-layout', authenticate, async (req, res) => {
+  try {
+    const layout = req.body?.layout || {};
+    const { rows } = await pool.query(
+      `UPDATE invoice_layout_settings SET layout = $2, updated_at = now() WHERE id = $1 RETURNING layout`,
+      [LAYOUT_GLOBAL_ID, layout]
+    );
+    res.json({ data: { layout: rows[0]?.layout || {} } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/companies/:id/invoice-layout', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT invoice_layout FROM companies WHERE id = $1', [req.params.id]);
+    res.json({ data: { layout: rows[0]?.invoice_layout || null } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/companies/:id/invoice-layout', authenticate, async (req, res) => {
+  try {
+    const layout = req.body?.layout ?? null; // null clears override
+    const { rows } = await pool.query(
+      `UPDATE companies SET invoice_layout = $2 WHERE id = $1 AND user_id = $3 RETURNING invoice_layout`,
+      [req.params.id, layout, req.user.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Company not found' });
+    res.json({ data: { layout: rows[0].invoice_layout } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // ============================================
 const frontendPath = path.resolve(__dirname, '..', '..', 'dist');
 if (fs.existsSync(frontendPath)) {

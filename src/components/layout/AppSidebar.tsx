@@ -1,5 +1,5 @@
  import { useLocation, Link } from "react-router-dom";
- import { Home, Building2, FileText, Menu, LogOut, Shield, Download } from "lucide-react";
+ import { Home, Building2, FileText, Menu, LogOut, Shield, Download, LayoutTemplate } from "lucide-react";
  import { cn } from "@/lib/utils";
  import { useAuth } from "@/contexts/AuthContext";
  import { useAdmin } from "@/hooks/useAdmin";
@@ -26,6 +26,7 @@ import {
  
  const adminNavItems = [
    { title: "Admin Panel", url: "/admin", icon: Shield },
+   { title: "Invoice Layout", url: "/admin/invoice-layout", icon: LayoutTemplate },
  ];
 
 export function AppSidebar() {

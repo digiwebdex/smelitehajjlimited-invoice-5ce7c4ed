@@ -3,6 +3,7 @@ import { ThemedInvoiceDocument } from "@/components/invoice/ThemedInvoiceDocumen
 import { generateInvoicePdfFromDom } from "@/lib/generateInvoicePdfFromDom";
 import { ThemeSettings } from "@/types/theme";
 import { BrandSettings } from "@/types/branding";
+import { InvoiceLayout } from "@/types/invoiceLayout";
 
 interface RenderArgs {
   invoice: any;
@@ -11,11 +12,12 @@ interface RenderArgs {
   company: any;
   theme: ThemeSettings;
   branding: BrandSettings | null | undefined;
+  layout?: InvoiceLayout;
   filename: string;
 }
 
 export async function renderInvoicePdfBlob(args: Omit<RenderArgs, "filename">): Promise<Blob> {
-  const { invoice, items, installments, company, theme, branding } = args;
+  const { invoice, items, installments, company, theme, branding, layout } = args;
   const host = document.createElement("div");
   host.style.position = "fixed";
   host.style.left = "-10000px";
@@ -35,6 +37,7 @@ export async function renderInvoicePdfBlob(args: Omit<RenderArgs, "filename">): 
         company={company}
         theme={theme}
         branding={branding}
+        layout={layout}
         pdfMode
       />
     </div>
@@ -61,7 +64,7 @@ export async function renderInvoicePdfBlob(args: Omit<RenderArgs, "filename">): 
  * as PDF identical to the on-screen view, then clean up.
  */
 export async function renderAndDownloadInvoicePdf(args: RenderArgs): Promise<void> {
-  const { invoice, items, installments, company, theme, branding, filename } = args;
+  const { invoice, items, installments, company, theme, branding, layout, filename } = args;
 
   const host = document.createElement("div");
   host.style.position = "fixed";
@@ -83,6 +86,7 @@ export async function renderAndDownloadInvoicePdf(args: RenderArgs): Promise<voi
         company={company}
         theme={theme}
         branding={branding}
+        layout={layout}
         pdfMode
       />
     </div>

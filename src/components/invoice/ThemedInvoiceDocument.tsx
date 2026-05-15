@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
 import { InvoiceQRCode } from "@/components/InvoiceQRCode";
 import { ThemeSettings, defaultTheme } from "@/types/theme";
 import { BrandSettings, defaultBranding } from "@/types/branding";
 import { numberToWords } from "@/lib/numberToWords";
 import { getInvoiceFooterDetails } from "@/lib/invoiceFooter";
+import { InvoiceLayout, defaultInvoiceLayout } from "@/types/invoiceLayout";
 
 const getOrdinal = (n: number): string => {
   const suffixes = ["th", "st", "nd", "rd"];
@@ -64,6 +66,7 @@ interface ThemedInvoiceDocumentProps {
   company?: CompanyData | null;
   theme: ThemeSettings;
   branding?: BrandSettings | null;
+  layout?: InvoiceLayout;
   pdfMode?: boolean;
 }
 
@@ -81,9 +84,11 @@ export const ThemedInvoiceDocument = ({
   company,
   theme,
   branding,
+  layout,
 }: ThemedInvoiceDocumentProps) => {
   const t = theme || defaultTheme;
   const b = branding || defaultBranding;
+  const L = layout || defaultInvoiceLayout;
 
   const formatCurrency = (amount: number) =>
     `Tk ${new Intl.NumberFormat("en-BD", {
@@ -130,11 +135,10 @@ export const ThemedInvoiceDocument = ({
       style={{
         backgroundColor: "#ffffff",
         color: "#0f172a",
-        fontFamily:
-          "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-        fontSize: "11pt",
-        lineHeight: 1.5,
-        padding: "16mm 14mm",
+        fontFamily: L.typography.fontFamily,
+        fontSize: `${L.typography.baseFontSize}pt`,
+        lineHeight: L.typography.lineHeight,
+        padding: `${L.header.paddingTop}mm ${L.header.paddingX}mm`,
         boxSizing: "border-box",
       }}
     >
@@ -144,17 +148,17 @@ export const ThemedInvoiceDocument = ({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          marginBottom: "14mm",
+          marginBottom: `${L.header.marginBottom}mm`,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {headerLogo ? (
+          {L.header.showLogo && (headerLogo ? (
             <img
               src={headerLogo}
               alt={headerName}
               style={{
-                width: "56px",
-                height: "56px",
+                width: `${L.header.logoSize}px`,
+                height: `${L.header.logoSize}px`,
                 borderRadius: "9999px",
                 objectFit: "cover",
               }}
@@ -162,12 +166,12 @@ export const ThemedInvoiceDocument = ({
           ) : (
             <div
               style={{
-                width: "56px",
-                height: "56px",
+                width: `${L.header.logoSize}px`,
+                height: `${L.header.logoSize}px`,
                 borderRadius: "9999px",
                 backgroundColor: t.primary_color,
                 color: "#ffffff",
-                fontSize: "22px",
+                fontSize: `${Math.round(L.header.logoSize * 0.4)}px`,
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
@@ -176,12 +180,12 @@ export const ThemedInvoiceDocument = ({
             >
               {headerName?.charAt(0) || "C"}
             </div>
-          )}
+          ))}
           <div>
-            <div style={{ fontSize: "16pt", fontWeight: 700, letterSpacing: "-0.01em" }}>
+            <div style={{ fontSize: `${L.header.companyNameSize}pt`, fontWeight: 700, letterSpacing: "-0.01em" }}>
               {headerName}
             </div>
-            {headerTagline && (
+            {L.header.showTagline && headerTagline && (
               <div style={{ fontSize: "9pt", color: "#64748b", marginTop: "2px" }}>
                 {headerTagline}
               </div>
@@ -192,192 +196,223 @@ export const ThemedInvoiceDocument = ({
         <div style={{ textAlign: "right" }}>
           <div
             style={{
-              fontSize: "26pt",
+              fontSize: `${L.header.titleSize * L.typography.headingScale}pt`,
               fontWeight: 800,
               letterSpacing: "0.08em",
-              color: "#0f172a",
+              color: L.header.titleColor,
               lineHeight: 1,
             }}
           >
-            INVOICE
+            {L.header.titleText}
           </div>
-          <div
-            style={{
-              fontSize: "10pt",
-              color: "#64748b",
-              marginTop: "6px",
-              letterSpacing: "0.04em",
-            }}
-          >
-            {invoice.invoice_number}
-          </div>
-          <div style={{ marginTop: "8px" }}>
-            <span
+          {L.header.showInvoiceNumber && (
+            <div
               style={{
-                display: "inline-block",
-                backgroundColor: sb.bg,
-                color: sb.fg,
-                fontSize: "8.5pt",
-                fontWeight: 600,
-                padding: "3px 10px",
-                borderRadius: "9999px",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
+                fontSize: "10pt",
+                color: "#64748b",
+                marginTop: "6px",
+                letterSpacing: "0.04em",
               }}
             >
-              {invoice.status}
-            </span>
-          </div>
+              {invoice.invoice_number}
+            </div>
+          )}
+          {L.header.showStatusBadge && (
+            <div style={{ marginTop: "8px" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  backgroundColor: sb.bg,
+                  color: sb.fg,
+                  fontSize: "8.5pt",
+                  fontWeight: 600,
+                  padding: "3px 10px",
+                  borderRadius: "9999px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                {invoice.status}
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
       {/* META: Bill To + Date */}
-      <section
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: "20mm",
-          marginBottom: "12mm",
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontSize: "8pt",
-              color: "#94a3b8",
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              marginBottom: "6px",
-            }}
-          >
-            Billed to
-          </div>
-          <div style={{ fontSize: "12pt", fontWeight: 600, color: "#0f172a" }}>
-            {invoice.client_name}
-          </div>
-          {invoice.client_email && (
-            <div style={{ fontSize: "9.5pt", color: "#475569", marginTop: "2px" }}>
-              {invoice.client_email}
-            </div>
-          )}
-          {invoice.client_phone && (
-            <div style={{ fontSize: "9.5pt", color: "#475569" }}>
-              {invoice.client_phone}
-            </div>
-          )}
-          {invoice.client_address && (
-            <div style={{ fontSize: "9.5pt", color: "#475569" }}>
-              {invoice.client_address}
-            </div>
-          )}
-        </div>
-
-        <div style={{ textAlign: "right" }}>
-          <div
-            style={{
-              fontSize: "8pt",
-              color: "#94a3b8",
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              marginBottom: "6px",
-            }}
-          >
-            Invoice date
-          </div>
-          <div style={{ fontSize: "11pt", fontWeight: 600, color: "#0f172a" }}>
-            {formatDate(invoice.invoice_date)}
-          </div>
-        </div>
-      </section>
-
-      {/* ITEM TABLE */}
-      <table
-        className="invoice-items"
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginBottom: "8mm",
-        }}
-      >
-        <colgroup>
-          <col style={{ width: "54%" }} />
-          <col style={{ width: "10%" }} />
-          <col style={{ width: "18%" }} />
-          <col style={{ width: "18%" }} />
-        </colgroup>
-        <thead>
-          <tr>
-            {["Description", "Qty", "Unit Price", "Amount"].map((h, i) => (
-              <th
-                key={h}
+      {(L.body.showBilledTo || L.body.showInvoiceDate) && (
+        <section
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "20mm",
+            marginBottom: `${L.body.sectionGap}mm`,
+          }}
+        >
+          {L.body.showBilledTo && (
+            <div style={{ flex: 1 }}>
+              <div
                 style={{
-                  textAlign: i >= 2 ? "right" : i === 1 ? "center" : "left",
-                  padding: "10px 4px",
                   fontSize: "8pt",
-                  fontWeight: 600,
                   color: "#94a3b8",
                   textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  borderBottom: "1px solid #e2e8f0",
+                  letterSpacing: "0.12em",
+                  marginBottom: "6px",
                 }}
               >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.id} className="invoice-row">
-              <td
+                Billed to
+              </div>
+              <div style={{ fontSize: "12pt", fontWeight: 600, color: "#0f172a" }}>
+                {invoice.client_name}
+              </div>
+              {invoice.client_email && (
+                <div style={{ fontSize: "9.5pt", color: "#475569", marginTop: "2px" }}>
+                  {invoice.client_email}
+                </div>
+              )}
+              {invoice.client_phone && (
+                <div style={{ fontSize: "9.5pt", color: "#475569" }}>
+                  {invoice.client_phone}
+                </div>
+              )}
+              {invoice.client_address && (
+                <div style={{ fontSize: "9.5pt", color: "#475569" }}>
+                  {invoice.client_address}
+                </div>
+              )}
+            </div>
+          )}
+
+          {L.body.showInvoiceDate && (
+            <div style={{ textAlign: "right" }}>
+              <div
                 style={{
-                  padding: "9px 4px",
-                  fontSize: "10.5pt",
-                  color: "#0f172a",
-                  fontWeight: 500,
-                  borderBottom: "1px solid #f1f5f9",
+                  fontSize: "8pt",
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                  marginBottom: "6px",
                 }}
               >
-                {item.title || "—"}
-              </td>
-              <td
-                style={{
-                  padding: "9px 4px",
-                  fontSize: "10.5pt",
-                  color: "#475569",
-                  textAlign: "center",
-                  borderBottom: "1px solid #f1f5f9",
-                }}
-              >
-                {item.qty || 1}
-              </td>
-              <td
-                style={{
-                  padding: "9px 4px",
-                  fontSize: "10.5pt",
-                  color: "#475569",
-                  textAlign: "right",
-                  borderBottom: "1px solid #f1f5f9",
-                }}
-              >
-                {formatCurrency(item.unit_price || item.amount)}
-              </td>
-              <td
-                style={{
-                  padding: "9px 4px",
-                  fontSize: "10.5pt",
-                  color: "#0f172a",
-                  textAlign: "right",
-                  fontWeight: 600,
-                  borderBottom: "1px solid #f1f5f9",
-                }}
-              >
-                {formatCurrency(item.amount)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                Invoice date
+              </div>
+              <div style={{ fontSize: "11pt", fontWeight: 600, color: "#0f172a" }}>
+                {formatDate(invoice.invoice_date)}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ITEM TABLE */}
+      {(() => {
+        const cols: Array<{
+          key: "description" | "qty" | "unitPrice" | "amount";
+          show: boolean;
+          width: number;
+          align: "left" | "center" | "right";
+          label: string;
+          render: (item: InvoiceItemData) => ReactNode;
+          tdColor: string;
+          tdWeight: number;
+        }> = [
+          {
+            key: "description",
+            show: true,
+            width: L.body.colWidths.description,
+            align: "left",
+            label: L.body.colLabels.description,
+            render: (item) => item.title || "—",
+            tdColor: "#0f172a",
+            tdWeight: 500,
+          },
+          {
+            key: "qty",
+            show: L.body.showQty,
+            width: L.body.colWidths.qty,
+            align: "center",
+            label: L.body.colLabels.qty,
+            render: (item) => item.qty || 1,
+            tdColor: "#475569",
+            tdWeight: 400,
+          },
+          {
+            key: "unitPrice",
+            show: L.body.showUnitPrice,
+            width: L.body.colWidths.unitPrice,
+            align: "right",
+            label: L.body.colLabels.unitPrice,
+            render: (item) => formatCurrency(item.unit_price || item.amount),
+            tdColor: "#475569",
+            tdWeight: 400,
+          },
+          {
+            key: "amount",
+            show: L.body.showAmount,
+            width: L.body.colWidths.amount,
+            align: "right",
+            label: L.body.colLabels.amount,
+            render: (item) => formatCurrency(item.amount),
+            tdColor: "#0f172a",
+            tdWeight: 600,
+          },
+        ];
+        const visible = cols.filter((c) => c.show);
+        return (
+          <table
+            className="invoice-items"
+            style={{ width: "100%", borderCollapse: "collapse", marginBottom: "8mm" }}
+          >
+            <colgroup>
+              {visible.map((c) => (
+                <col key={c.key} style={{ width: `${c.width}%` }} />
+              ))}
+            </colgroup>
+            <thead>
+              <tr>
+                {visible.map((c) => (
+                  <th
+                    key={c.key}
+                    style={{
+                      textAlign: c.align,
+                      padding: `10px ${L.body.rowPaddingX}px`,
+                      fontSize: `${L.body.tableHeaderSize}pt`,
+                      fontWeight: 600,
+                      color: "#94a3b8",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      borderBottom: "1px solid #e2e8f0",
+                    }}
+                  >
+                    {c.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id} className="invoice-row">
+                  {visible.map((c) => (
+                    <td
+                      key={c.key}
+                      style={{
+                        padding: `${L.body.rowPaddingY}px ${L.body.rowPaddingX}px`,
+                        fontSize: `${L.body.tableFontSize}pt`,
+                        color: c.tdColor,
+                        textAlign: c.align,
+                        fontWeight: c.tdWeight,
+                        borderBottom: "1px solid #f1f5f9",
+                      }}
+                    >
+                      {c.render(item)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+      })()}
 
       {/* TOTALS */}
       <section
@@ -390,67 +425,69 @@ export const ThemedInvoiceDocument = ({
       >
         <div style={{ width: "62%" }}>
           {[
-            { label: "Subtotal", value: invoice.subtotal, muted: true },
-            { label: "VAT", value: invoice.vat_amount, muted: true },
-            { label: "Total", value: invoice.total_amount, bold: true },
-            {
-              label: "Total Paid",
-              value: invoice.paid_amount,
-              color: "#16a34a",
-            },
-          ].map((row) => (
+            { label: "Subtotal", value: invoice.subtotal, muted: true, show: L.body.showSubtotal },
+            { label: L.body.vatLabel, value: invoice.vat_amount, muted: true, show: L.body.showVat },
+            { label: "Total", value: invoice.total_amount, bold: true, show: L.body.showTotal },
+            { label: "Total Paid", value: invoice.paid_amount, color: "#16a34a", show: L.body.showPaid },
+          ]
+            .filter((row) => row.show)
+            .map((row) => (
+              <div
+                key={row.label}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "6px 0",
+                  fontSize: "10.5pt",
+                  color: row.color || (row.muted ? "#64748b" : "#0f172a"),
+                  fontWeight: row.bold ? 700 : row.color ? 600 : 400,
+                }}
+              >
+                <span>{row.label}</span>
+                <span>{formatCurrency(row.value)}</span>
+              </div>
+            ))}
+
+          {L.body.showBalance && (
             <div
-              key={row.label}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                padding: "6px 0",
-                fontSize: "10.5pt",
-                color: row.color || (row.muted ? "#64748b" : "#0f172a"),
-                fontWeight: row.bold ? 700 : row.color ? 600 : 400,
+                alignItems: "center",
+                marginTop: "8px",
+                padding: "12px 14px",
+                backgroundColor: isPaidInFull ? "#dcfce7" : "#0f172a",
+                color: isPaidInFull ? "#166534" : "#ffffff",
+                borderRadius: "6px",
+                fontSize: "12pt",
+                fontWeight: 700,
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact",
               }}
             >
-              <span>{row.label}</span>
-              <span>{formatCurrency(row.value)}</span>
+              <span>{isPaidInFull ? "Paid in Full" : "Balance Due"}</span>
+              <span>{formatCurrency(invoice.due_amount)}</span>
             </div>
-          ))}
+          )}
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: "8px",
-              padding: "12px 14px",
-              backgroundColor: isPaidInFull ? "#dcfce7" : "#0f172a",
-              color: isPaidInFull ? "#166534" : "#ffffff",
-              borderRadius: "6px",
-              fontSize: "12pt",
-              fontWeight: 700,
-              WebkitPrintColorAdjust: "exact",
-              printColorAdjust: "exact",
-            }}
-          >
-            <span>{isPaidInFull ? "Paid in Full" : "Balance Due"}</span>
-            <span>{formatCurrency(invoice.due_amount)}</span>
-          </div>
-
-          <div
-            style={{
-              marginTop: "8px",
-              fontSize: "9pt",
-              color: "#64748b",
-              wordBreak: "break-word",
-            }}
-          >
-            <span style={{ fontWeight: 600 }}>In Word: </span>
-            {numberToWords(wordsAmount)} Taka Only
-          </div>
+          {L.body.showInWords && (
+            <div
+              style={{
+                marginTop: "8px",
+                fontSize: "9pt",
+                color: "#64748b",
+                wordBreak: "break-word",
+              }}
+            >
+              <span style={{ fontWeight: 600 }}>In Word: </span>
+              {numberToWords(wordsAmount)} Taka Only
+            </div>
+          )}
         </div>
       </section>
 
       {/* NOTES */}
-      {invoice.notes && (
+      {L.body.showNotes && invoice.notes && (
         <section
           className="invoice-keep-together"
           style={{
@@ -486,7 +523,7 @@ export const ThemedInvoiceDocument = ({
       )}
 
       {/* PAYMENT HISTORY */}
-      {installments.length > 0 && (
+      {L.body.showPaymentHistory && installments.length > 0 && (
         <section
           className="invoice-keep-together"
           style={{ marginBottom: "10mm" }}
@@ -547,114 +584,120 @@ export const ThemedInvoiceDocument = ({
         </section>
       )}
 
-      {/* FOOTER BLOCK — signatures + thank-you + address + QR.
-          Single break-inside:avoid block guarantees it lands on the
-          last page only. */}
+      {/* FOOTER BLOCK */}
       <footer
         data-pdf-footer
         className="invoice-footer-block invoice-keep-together"
-        style={{ marginTop: "auto", paddingTop: "6mm" }}
+        style={{ marginTop: "auto", paddingTop: `${L.footer.paddingTop}mm` }}
       >
         {/* Signatures */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "10mm",
-            marginBottom: "6mm",
-          }}
-        >
-          {[
-            { label: "Received by", sig: b.signature_received_by },
-            { label: "Prepared by", sig: b.signature_prepared_by },
-            { label: "Authorize by", sig: b.signature_authorize_by },
-          ].map((item) => (
-            <div key={item.label} style={{ flex: 1, textAlign: "center" }}>
-              <div
-                style={{
-                  height: "59px",
-                  display: "flex",
-                  alignItems: "flex-end",
-                  justifyContent: "center",
-                  marginBottom: "2px",
-                  position: "relative",
-                  zIndex: 1,
-                  overflow: "visible",
-                }}
-              >
-                {item.sig && (
-                  <img
-                    src={item.sig}
-                    alt={item.label}
-                    style={{
-                      height: "59px",
-                      maxWidth: "85%",
-                      objectFit: "contain",
-                      display: "block",
-                    }}
-                  />
-                )}
+        {L.footer.showSignatures && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: `${L.footer.signatureGap}mm`,
+              marginBottom: "6mm",
+            }}
+          >
+            {[
+              { label: L.footer.signatureLabels.received, sig: b.signature_received_by },
+              { label: L.footer.signatureLabels.prepared, sig: b.signature_prepared_by },
+              { label: L.footer.signatureLabels.authorize, sig: b.signature_authorize_by },
+            ].map((item) => (
+              <div key={item.label} style={{ flex: 1, textAlign: "center" }}>
+                <div
+                  style={{
+                    height: `${L.footer.signatureHeight}px`,
+                    display: "flex",
+                    alignItems: "flex-end",
+                    justifyContent: "center",
+                    marginBottom: "2px",
+                    position: "relative",
+                    zIndex: 1,
+                    overflow: "visible",
+                  }}
+                >
+                  {item.sig && (
+                    <img
+                      src={item.sig}
+                      alt={item.label}
+                      style={{
+                        height: `${L.footer.signatureHeight}px`,
+                        maxWidth: "85%",
+                        objectFit: "contain",
+                        display: "block",
+                      }}
+                    />
+                  )}
+                </div>
+                <div
+                  style={{
+                    borderTop: "1px solid #475569",
+                    paddingTop: "8px",
+                    fontSize: "9pt",
+                    color: "#64748b",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {item.label}
+                </div>
               </div>
-              <div
-                style={{
-                  borderTop: "1px solid #475569",
-                  paddingTop: "8px",
-                  fontSize: "9pt",
-                  color: "#64748b",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                {item.label}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Thank-you */}
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: "10pt",
-            color: "#475569",
-            marginBottom: "5mm",
-          }}
-        >
-          {footerThankYou}
-        </div>
+        {L.footer.showThankYou && (
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "10pt",
+              color: "#475569",
+              marginBottom: "5mm",
+            }}
+          >
+            {footerThankYou}
+          </div>
+        )}
 
         {/* Address + QR */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            gap: "10mm",
-            paddingTop: "4mm",
-            borderTop: "1px solid #e2e8f0",
-          }}
-        >
-          <div style={{ fontSize: "8.5pt", color: "#64748b", lineHeight: 1.6 }}>
-            {addressLine1 && <div>{addressLine1}</div>}
-            {addressLine2 && <div>{addressLine2}</div>}
-            {(footerPhone || footerEmail) && (
-              <div>
-                {[footerPhone, footerEmail].filter(Boolean).join(" · ")}
+        {(L.footer.showAddress || L.footer.showQR) && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              gap: "10mm",
+              paddingTop: "4mm",
+              borderTop: "1px solid #e2e8f0",
+            }}
+          >
+            {L.footer.showAddress ? (
+              <div style={{ fontSize: `${L.footer.fontSize}pt`, color: "#64748b", lineHeight: 1.6 }}>
+                {addressLine1 && <div>{addressLine1}</div>}
+                {addressLine2 && <div>{addressLine2}</div>}
+                {L.footer.showContact && (footerPhone || footerEmail) && (
+                  <div>
+                    {[footerPhone, footerEmail].filter(Boolean).join(" · ")}
+                  </div>
+                )}
+                {L.footer.showWebsite && footerWebsite && (
+                  <div style={{ color: t.primary_color }}>{footerWebsite}</div>
+                )}
               </div>
-            )}
-            {footerWebsite && (
-              <div style={{ color: t.primary_color }}>{footerWebsite}</div>
+            ) : <div />}
+
+            {L.footer.showQR && showQR && (
+              <div style={{ textAlign: "center" }}>
+                <InvoiceQRCode invoiceId={invoice.id} size={L.footer.qrSize} showLabel={false} />
+                <div style={{ fontSize: "7pt", color: "#94a3b8", marginTop: "3px" }}>
+                  Scan for details
+                </div>
+              </div>
             )}
           </div>
-
-          {showQR && (
-            <div style={{ textAlign: "center" }}>
-              <InvoiceQRCode invoiceId={invoice.id} size={64} showLabel={false} />
-              <div style={{ fontSize: "7pt", color: "#94a3b8", marginTop: "3px" }}>
-                Scan for details
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </footer>
     </div>
   );

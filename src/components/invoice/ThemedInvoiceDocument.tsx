@@ -134,11 +134,10 @@ export const ThemedInvoiceDocument = ({
       style={{
         backgroundColor: "#ffffff",
         color: "#0f172a",
-        fontFamily:
-          "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-        fontSize: "11pt",
-        lineHeight: 1.5,
-        padding: "16mm 14mm",
+        fontFamily: L.typography.fontFamily,
+        fontSize: `${L.typography.baseFontSize}pt`,
+        lineHeight: L.typography.lineHeight,
+        padding: `${L.header.paddingTop}mm ${L.header.paddingX}mm`,
         boxSizing: "border-box",
       }}
     >
@@ -148,17 +147,17 @@ export const ThemedInvoiceDocument = ({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          marginBottom: "14mm",
+          marginBottom: `${L.header.marginBottom}mm`,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {headerLogo ? (
+          {L.header.showLogo && (headerLogo ? (
             <img
               src={headerLogo}
               alt={headerName}
               style={{
-                width: "56px",
-                height: "56px",
+                width: `${L.header.logoSize}px`,
+                height: `${L.header.logoSize}px`,
                 borderRadius: "9999px",
                 objectFit: "cover",
               }}
@@ -166,12 +165,12 @@ export const ThemedInvoiceDocument = ({
           ) : (
             <div
               style={{
-                width: "56px",
-                height: "56px",
+                width: `${L.header.logoSize}px`,
+                height: `${L.header.logoSize}px`,
                 borderRadius: "9999px",
                 backgroundColor: t.primary_color,
                 color: "#ffffff",
-                fontSize: "22px",
+                fontSize: `${Math.round(L.header.logoSize * 0.4)}px`,
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
@@ -180,12 +179,12 @@ export const ThemedInvoiceDocument = ({
             >
               {headerName?.charAt(0) || "C"}
             </div>
-          )}
+          ))}
           <div>
-            <div style={{ fontSize: "16pt", fontWeight: 700, letterSpacing: "-0.01em" }}>
+            <div style={{ fontSize: `${L.header.companyNameSize}pt`, fontWeight: 700, letterSpacing: "-0.01em" }}>
               {headerName}
             </div>
-            {headerTagline && (
+            {L.header.showTagline && headerTagline && (
               <div style={{ fontSize: "9pt", color: "#64748b", marginTop: "2px" }}>
                 {headerTagline}
               </div>
@@ -196,42 +195,46 @@ export const ThemedInvoiceDocument = ({
         <div style={{ textAlign: "right" }}>
           <div
             style={{
-              fontSize: "26pt",
+              fontSize: `${L.header.titleSize * L.typography.headingScale}pt`,
               fontWeight: 800,
               letterSpacing: "0.08em",
-              color: "#0f172a",
+              color: L.header.titleColor,
               lineHeight: 1,
             }}
           >
-            INVOICE
+            {L.header.titleText}
           </div>
-          <div
-            style={{
-              fontSize: "10pt",
-              color: "#64748b",
-              marginTop: "6px",
-              letterSpacing: "0.04em",
-            }}
-          >
-            {invoice.invoice_number}
-          </div>
-          <div style={{ marginTop: "8px" }}>
-            <span
+          {L.header.showInvoiceNumber && (
+            <div
               style={{
-                display: "inline-block",
-                backgroundColor: sb.bg,
-                color: sb.fg,
-                fontSize: "8.5pt",
-                fontWeight: 600,
-                padding: "3px 10px",
-                borderRadius: "9999px",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
+                fontSize: "10pt",
+                color: "#64748b",
+                marginTop: "6px",
+                letterSpacing: "0.04em",
               }}
             >
-              {invoice.status}
-            </span>
-          </div>
+              {invoice.invoice_number}
+            </div>
+          )}
+          {L.header.showStatusBadge && (
+            <div style={{ marginTop: "8px" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  backgroundColor: sb.bg,
+                  color: sb.fg,
+                  fontSize: "8.5pt",
+                  fontWeight: 600,
+                  padding: "3px 10px",
+                  borderRadius: "9999px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                {invoice.status}
+              </span>
+            </div>
+          )}
         </div>
       </header>
 

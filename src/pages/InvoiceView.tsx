@@ -268,6 +268,7 @@ export default function InvoiceView() {
               company={companyData}
               theme={activeTheme}
               branding={branding}
+              layout={invoiceLayout}
             />
           </div>
         </div>

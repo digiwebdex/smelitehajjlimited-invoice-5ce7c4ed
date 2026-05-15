@@ -239,63 +239,69 @@ export const ThemedInvoiceDocument = ({
       </header>
 
       {/* META: Bill To + Date */}
-      <section
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: "20mm",
-          marginBottom: "12mm",
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontSize: "8pt",
-              color: "#94a3b8",
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              marginBottom: "6px",
-            }}
-          >
-            Billed to
-          </div>
-          <div style={{ fontSize: "12pt", fontWeight: 600, color: "#0f172a" }}>
-            {invoice.client_name}
-          </div>
-          {invoice.client_email && (
-            <div style={{ fontSize: "9.5pt", color: "#475569", marginTop: "2px" }}>
-              {invoice.client_email}
+      {(L.body.showBilledTo || L.body.showInvoiceDate) && (
+        <section
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "20mm",
+            marginBottom: `${L.body.sectionGap}mm`,
+          }}
+        >
+          {L.body.showBilledTo && (
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontSize: "8pt",
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                  marginBottom: "6px",
+                }}
+              >
+                Billed to
+              </div>
+              <div style={{ fontSize: "12pt", fontWeight: 600, color: "#0f172a" }}>
+                {invoice.client_name}
+              </div>
+              {invoice.client_email && (
+                <div style={{ fontSize: "9.5pt", color: "#475569", marginTop: "2px" }}>
+                  {invoice.client_email}
+                </div>
+              )}
+              {invoice.client_phone && (
+                <div style={{ fontSize: "9.5pt", color: "#475569" }}>
+                  {invoice.client_phone}
+                </div>
+              )}
+              {invoice.client_address && (
+                <div style={{ fontSize: "9.5pt", color: "#475569" }}>
+                  {invoice.client_address}
+                </div>
+              )}
             </div>
           )}
-          {invoice.client_phone && (
-            <div style={{ fontSize: "9.5pt", color: "#475569" }}>
-              {invoice.client_phone}
-            </div>
-          )}
-          {invoice.client_address && (
-            <div style={{ fontSize: "9.5pt", color: "#475569" }}>
-              {invoice.client_address}
-            </div>
-          )}
-        </div>
 
-        <div style={{ textAlign: "right" }}>
-          <div
-            style={{
-              fontSize: "8pt",
-              color: "#94a3b8",
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              marginBottom: "6px",
-            }}
-          >
-            Invoice date
-          </div>
-          <div style={{ fontSize: "11pt", fontWeight: 600, color: "#0f172a" }}>
-            {formatDate(invoice.invoice_date)}
-          </div>
-        </div>
-      </section>
+          {L.body.showInvoiceDate && (
+            <div style={{ textAlign: "right" }}>
+              <div
+                style={{
+                  fontSize: "8pt",
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                  marginBottom: "6px",
+                }}
+              >
+                Invoice date
+              </div>
+              <div style={{ fontSize: "11pt", fontWeight: 600, color: "#0f172a" }}>
+                {formatDate(invoice.invoice_date)}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ITEM TABLE */}
       <table

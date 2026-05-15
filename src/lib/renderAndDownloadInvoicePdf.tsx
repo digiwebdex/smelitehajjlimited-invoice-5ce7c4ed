@@ -17,7 +17,7 @@ interface RenderArgs {
 }
 
 export async function renderInvoicePdfBlob(args: Omit<RenderArgs, "filename">): Promise<Blob> {
-  const { invoice, items, installments, company, theme, branding } = args;
+  const { invoice, items, installments, company, theme, branding, layout } = args;
   const host = document.createElement("div");
   host.style.position = "fixed";
   host.style.left = "-10000px";

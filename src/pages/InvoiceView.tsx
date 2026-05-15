@@ -167,6 +167,10 @@ export default function InvoiceView() {
             >
               {invoice.status}
             </span>
+            <Button variant="outline" onClick={() => navigate(`/invoices/${id}/preview`)}>
+              <Eye className="h-4 w-4 mr-2" />
+              Compare Preview
+            </Button>
             <Button variant="outline" onClick={handleDownloadPdf}>
               <FileDown className="h-4 w-4 mr-2" />
               Download Invoice

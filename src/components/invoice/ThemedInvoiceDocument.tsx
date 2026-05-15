@@ -312,7 +312,7 @@ export const ThemedInvoiceDocument = ({
           width: number;
           align: "left" | "center" | "right";
           label: string;
-          render: (item: InvoiceItemData) => React.ReactNode;
+          render: (item: InvoiceItemData) => ReactNode;
           tdColor: string;
           tdWeight: number;
         }> = [

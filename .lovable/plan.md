@@ -1,46 +1,55 @@
-## Goal
+## PDF Audit Findings (INV-2026-008_5.pdf)
 
-Make the downloaded PDF look identical to the on-screen software view (image 2). Currently the PDF (image 1) renders the same content but with much larger vertical gaps, pushing the payment history, signatures, address, and QR code onto a second page. The software view fits all of that on a single page with tight spacing.
+**Issues observed:**
+1. **Page 1 wasted whitespace** — break occurs after "RT" row leaving ~25% empty bottom space; page 2 then carries only 2 rows + totals + signatures.
+2. **Page 2 mostly blank** — ~50% of page is unused below the QR/footer block.
+3. **Signature column mapping** — order is `Received by | Prepared by | Authorize by`. CEO Saddam sits over "Prepared by" (middle) and Proprietor Al-Amin over "Authorize by" (right). Conventionally CEO should authorize. Needs confirmation/swap.
+4. **"Tax" label** — should read "VAT" per BD locale.
+5. **Print vs PDF parity** — need to confirm browser print output matches PDF (margins, signature size, footer flow) using the new Compare Preview screen.
 
-## Root cause
+What looks fine: ৳ currency rendering, header logo, BILL TO block, totals colors (Total Paid green, Balance red bar), In Word line, Payment History styling, universal address, QR code.
 
-In `src/components/invoice/ThemedInvoiceDocument.tsx`, the footer wrapper and payment history use generous margins that look fine on screen inside a scrollable card but overflow A4 in the PDF capture:
+---
 
-- Footer wrapper: `mt-16` (64px) above signatures
-- Bottom row (address + QR): `mt-12` (48px) above
-- Payment History card: `mt-10` + `p-6` (40px top, 24px padding)
-- Notes card: `mt-10` + `p-6`
-- Bill To section: `mt-6 pt-6`
-- Table summary rows: `py-1.5`
+## Plan
 
-The on-screen view in image 2 uses much smaller gaps. The PDF generator (`generateInvoicePdfFromDom.ts`) captures the DOM as-is, so the only fix needed is reducing these spacings in the shared component.
+### 1. Tighten PDF pagination (whitespace fix)
+- In `src/lib/generateInvoicePdfFromDom.ts`:
+  - Reduce `PAGE_BREAK_SAFETY_MM` from 3 → 1.5 so more rows fit per page.
+  - Lower `minSliceHeightPx` floor and prefer the **largest** valid breakpoint within the page rather than the last-seen one (current logic already picks the largest within range, but `[data-pdf-footer]` atomic block may be forcing an early break — verify by logging atomic ranges and shrink the footer's `keep-together` scope to only signatures + thank-you, letting the address/QR flow independently).
+- In `ThemedInvoiceDocument.tsx`:
+  - Mark only the **signatures + Thank-you** as `invoice-keep-together`, NOT the entire footer (address/QR can sit on next page or below).
+  - Reduce row vertical padding by 1px in pdfMode so 1–2 more rows fit per page.
 
-## Changes (single file)
+### 2. Signature mapping audit
+- Confirm the order in `ThemedInvoiceDocument.tsx`. Current source: column 1 Received, column 2 Prepared (CEO signature), column 3 Authorize (Proprietor signature).
+- If business expects **CEO = Authorize**, swap columns 2 and 3 so:
+  `Received by (empty) | Prepared by (Proprietor) | Authorize by (CEO)`.
+- Pull confirmation from user (will ask before swapping).
 
-**`src/components/invoice/ThemedInvoiceDocument.tsx`**
+### 3. Rename "Tax" → "VAT"
+- Update label in `ThemedInvoiceDocument.tsx` totals section. Apply to web, print, and pdfMode.
 
-1. **Header pb-6 → pb-4** — tighter gap below header.
-2. **Bill To block: `mt-6 pt-6` → `mt-4 pt-4`** — match compact software view.
-3. **Table wrapper: `mt-6` → `mt-4`**.
-4. **Notes card: `mt-10 p-6` → `mt-4 p-4`** — only when notes exist.
-5. **Payment History card: `mt-10 p-6` → `mt-4 p-4`**, inner `space-y-3` → `space-y-2`, row `py-2` → `py-1`.
-6. **Footer wrapper: `mt-16` → `mt-6`**.
-7. **Signature row gap: `24px` → `16px`**, signature image `height: 36px` → `32px`.
-8. **Thank you `mt-3` → `mt-2`**.
-9. **Bottom row (address + QR): `mt-12` → `mt-6`**.
-10. **QR size: 70 → 64**.
+### 4. Print vs PDF alignment audit
+- Open `/invoices/:id/preview` (Compare Preview added in last build) and visually compare:
+  - Header logo size/position
+  - Table column widths and row spacing
+  - Totals box width and color bars
+  - Signature row spacing & image height (currently 59px)
+  - Footer address/QR alignment
+- Fix any divergence by ensuring both paths use identical CSS (no `pdfMode`-only style overrides for visible elements except print-safe colors).
 
-These changes apply to both the on-screen view AND the PDF (since the PDF is captured from this same component via `renderAndDownloadInvoicePdf`). The software view in image 2 already looks compact — these reductions bring it slightly tighter, matching the reference, and crucially make the PDF page 1 fit everything just like the screenshot.
+---
 
-## Out of scope
+## Technical details
 
-- No changes to `generateInvoicePdfFromDom.ts` (pagination logic stays as-is — once content fits naturally, no page break is needed).
-- No changes to colors, fonts, or table column widths.
-- No changes to print stylesheet.
+| File | Change |
+|------|--------|
+| `src/lib/generateInvoicePdfFromDom.ts` | `PAGE_BREAK_SAFETY_MM = 1.5`; verify atomic-range logic |
+| `src/components/invoice/ThemedInvoiceDocument.tsx` | Narrow `invoice-keep-together` scope; row padding −1px in pdfMode; rename Tax→VAT; (optional) swap signature columns 2↔3 |
+| `src/index.css` | Confirm `@media print` margins match PDF (10mm all sides) |
 
-## Verification
+No backend or DB changes. Frontend-only edit. After deploy: `cd /var/www/smelitehajj-invoice && sudo bash migration/scripts/deploy.sh`.
 
-After the edit, download the PDF for the same invoice (INV-2026-015) and confirm:
-- Single page output (matches image 2 layout top-to-bottom)
-- Header, Bill To, table, totals, In Word, Payment History, signatures, Thank you, address + QR all visible on page 1
-- Spacing between sections matches the software view screenshot
+### Confirmation needed before implementing
+- **Signature swap**: should CEO Saddam Hossain be moved to "Authorize by" (right column) and Proprietor Al-Amin to "Prepared by" (middle)? Or keep as-is?

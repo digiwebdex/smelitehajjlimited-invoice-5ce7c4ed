@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { InvoiceQRCode } from "@/components/InvoiceQRCode";
 import { ThemeSettings, defaultTheme } from "@/types/theme";
 import { BrandSettings, defaultBranding } from "@/types/branding";

@@ -64,7 +64,7 @@ export async function renderInvoicePdfBlob(args: Omit<RenderArgs, "filename">): 
  * as PDF identical to the on-screen view, then clean up.
  */
 export async function renderAndDownloadInvoicePdf(args: RenderArgs): Promise<void> {
-  const { invoice, items, installments, company, theme, branding, filename } = args;
+  const { invoice, items, installments, company, theme, branding, layout, filename } = args;
 
   const host = document.createElement("div");
   host.style.position = "fixed";
@@ -86,6 +86,7 @@ export async function renderAndDownloadInvoicePdf(args: RenderArgs): Promise<voi
         company={company}
         theme={theme}
         branding={branding}
+        layout={layout}
         pdfMode
       />
     </div>

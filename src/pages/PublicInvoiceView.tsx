@@ -128,6 +128,7 @@ export default function PublicInvoiceView() {
       company: companyData,
       theme: activeTheme,
       branding,
+      layout: invoiceLayout,
       filename: `${invoice.invoice_number}.pdf`,
     });
   };

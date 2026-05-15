@@ -331,7 +331,7 @@ export const ThemedInvoiceDocument = ({
             <tr key={item.id} className="invoice-row">
               <td
                 style={{
-                  padding: "12px 4px",
+                  padding: "9px 4px",
                   fontSize: "10.5pt",
                   color: "#0f172a",
                   fontWeight: 500,
@@ -342,7 +342,7 @@ export const ThemedInvoiceDocument = ({
               </td>
               <td
                 style={{
-                  padding: "12px 4px",
+                  padding: "9px 4px",
                   fontSize: "10.5pt",
                   color: "#475569",
                   textAlign: "center",
@@ -353,7 +353,7 @@ export const ThemedInvoiceDocument = ({
               </td>
               <td
                 style={{
-                  padding: "12px 4px",
+                  padding: "9px 4px",
                   fontSize: "10.5pt",
                   color: "#475569",
                   textAlign: "right",
@@ -364,7 +364,7 @@ export const ThemedInvoiceDocument = ({
               </td>
               <td
                 style={{
-                  padding: "12px 4px",
+                  padding: "9px 4px",
                   fontSize: "10.5pt",
                   color: "#0f172a",
                   textAlign: "right",
@@ -391,7 +391,7 @@ export const ThemedInvoiceDocument = ({
         <div style={{ width: "62%" }}>
           {[
             { label: "Subtotal", value: invoice.subtotal, muted: true },
-            { label: "Tax", value: invoice.vat_amount, muted: true },
+            { label: "VAT", value: invoice.vat_amount, muted: true },
             { label: "Total", value: invoice.total_amount, bold: true },
             {
               label: "Total Paid",

@@ -6,7 +6,7 @@ const MARGIN_TOP_MM = 10;
 const MARGIN_BOTTOM_MM = 10;
 const MARGIN_LEFT_MM = 10;
 const MARGIN_RIGHT_MM = 10;
-const PAGE_BREAK_SAFETY_MM = 3;
+const PAGE_BREAK_SAFETY_MM = 1.5;
 
 /**
  * Find safe Y positions (in px) where the page can be split without cutting

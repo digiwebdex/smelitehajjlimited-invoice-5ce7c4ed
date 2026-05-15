@@ -37,6 +37,7 @@ export async function renderInvoicePdfBlob(args: Omit<RenderArgs, "filename">): 
         company={company}
         theme={theme}
         branding={branding}
+        layout={layout}
         pdfMode
       />
     </div>

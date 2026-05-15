@@ -137,6 +137,7 @@ export async function generateInvoicePdfFromDom(
       undefined,
       "FAST"
     );
+    if (output === "blob") return pdf.output("blob");
     pdf.save(filename);
     return;
   }

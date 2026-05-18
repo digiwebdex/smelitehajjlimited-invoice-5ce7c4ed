@@ -117,12 +117,13 @@ export default function InvoiceDetail() {
     [installments]
   );
   const dueAmount = totalAmount - paidAmount;
-  const status: InvoiceStatus =
+  const autoStatus: InvoiceStatus =
     paidAmount >= totalAmount && totalAmount > 0
       ? "paid"
       : paidAmount > 0
       ? "partial"
       : "unpaid";
+  const status: InvoiceStatus = statusOverride === "auto" ? autoStatus : statusOverride;
 
   // ── Populate new invoice number ──
   useEffect(() => {

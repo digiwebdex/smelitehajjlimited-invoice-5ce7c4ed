@@ -516,8 +516,15 @@ export default function InvoiceDetail() {
               clientAddress={clientAddress}
               notes={notes}
               companies={companies}
+              pastClients={pastClients}
               errors={errors}
               onChange={handleFieldChange}
+              onSelectPastClient={(c) => {
+                setClientName(c.name);
+                setClientEmail(c.email || "");
+                setClientPhone(c.phone || "");
+                setClientAddress(c.address || "");
+              }}
             />
 
             <LineItemsSection
@@ -535,7 +542,12 @@ export default function InvoiceDetail() {
               totalAmount={totalAmount}
               paidAmount={paidAmount}
               dueAmount={dueAmount}
+              status={status}
+              statusOverride={statusOverride}
+              amountInWords={amountInWords}
               onVatRateChange={setVatRate}
+              onStatusOverrideChange={setStatusOverride}
+              onAmountInWordsChange={setAmountInWords}
             />
 
             <PaymentsSection
@@ -544,6 +556,18 @@ export default function InvoiceDetail() {
               onUpdate={handleUpdateInstallment}
               onRemove={handleRemoveInstallment}
             />
+
+            {/* Full-width orange Save button */}
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="w-full h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-md"
+            >
+              {isSaving ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : null}
+              Save Invoice
+            </Button>
           </div>
 
           <div className="xl:col-span-5">

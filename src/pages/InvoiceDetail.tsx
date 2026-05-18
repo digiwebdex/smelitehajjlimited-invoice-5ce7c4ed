@@ -531,8 +531,8 @@ export default function InvoiceDetail() {
                   Live Preview
                 </h3>
               </div>
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border max-h-[calc(100vh-8rem)] overflow-y-auto">
-                <div className="origin-top-left scale-[0.7] xl:scale-[0.55] 2xl:scale-[0.7] w-[210mm]">
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border max-h-[calc(100vh-8rem)] overflow-auto">
+                <div style={{ zoom: 0.55 }}>
                   <ThemedInvoiceDocument
                     invoice={previewInvoice}
                     items={previewItems}

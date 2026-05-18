@@ -102,6 +102,8 @@ export default function InvoiceDetail() {
   ]);
   const [installments, setInstallments] = useState<LocalInstallment[]>([]);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
+  const [statusOverride, setStatusOverride] = useState<InvoiceStatus | "auto">("auto");
+  const [amountInWords, setAmountInWords] = useState("");
 
   // ── Derived calculations (use raw items, don't create new objects) ──
   const subtotal = useMemo(

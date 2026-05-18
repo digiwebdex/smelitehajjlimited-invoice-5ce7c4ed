@@ -389,6 +389,58 @@ export default function InvoiceDetail() {
   const isLoading = invoiceLoading || companiesLoading;
   const isSaving = createInvoice.isPending || updateInvoice.isPending;
 
+  // ── Live preview data ──
+  const { data: selectedCompany } = useCompany(companyId || undefined);
+  const { data: theme } = useTheme();
+  const { data: branding } = useBranding();
+  const { layout: invoiceLayout } = useEffectiveInvoiceLayout(companyId || undefined);
+  const activeTheme = theme || defaultTheme;
+
+  const previewInvoice = useMemo(
+    () => ({
+      id: id || "preview",
+      invoice_number: invoiceNumber || "DRAFT",
+      client_name: clientName || "Client Name",
+      client_email: clientEmail,
+      client_phone: clientPhone,
+      client_address: clientAddress,
+      invoice_date: invoiceDate || TODAY,
+      status,
+      subtotal,
+      vat_amount: vatAmount,
+      total_amount: totalAmount,
+      paid_amount: paidAmount,
+      due_amount: dueAmount,
+      notes,
+    }),
+    [id, invoiceNumber, clientName, clientEmail, clientPhone, clientAddress, invoiceDate, status, subtotal, vatAmount, totalAmount, paidAmount, dueAmount, notes]
+  );
+
+  const previewItems = useMemo(
+    () =>
+      items
+        .filter((i) => i.title.trim() || i.qty > 0 || i.unitPrice > 0)
+        .map((i) => ({
+          id: i.id,
+          title: i.title || "Item",
+          qty: toNumber(i.qty, 0),
+          unit_price: toNumber(i.unitPrice, 0),
+          amount: toNumber(i.qty, 0) * toNumber(i.unitPrice, 0),
+        })),
+    [items]
+  );
+
+  const previewInstallments = useMemo(
+    () =>
+      installments.map((inst) => ({
+        id: inst.id,
+        amount: toNumber(inst.amount, 0),
+        paid_date: inst.paid_date,
+        payment_method: inst.payment_method,
+      })),
+    [installments]
+  );
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -420,7 +472,7 @@ export default function InvoiceDetail() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+      <div className="space-y-6 animate-fade-in max-w-[1600px] mx-auto">
         <InvoiceFormHeader
           isNew={isNew}
           invoiceNumber={invoiceNumber}
@@ -430,8 +482,8 @@ export default function InvoiceDetail() {
           onSave={handleSave}
         />
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid gap-6 xl:grid-cols-12">
+          <div className="xl:col-span-7 space-y-6">
             <InvoiceDetailsCard
               invoiceNumber={invoiceNumber}
               companyId={companyId}
@@ -454,15 +506,6 @@ export default function InvoiceDetail() {
               onRemove={handleRemoveItem}
             />
 
-            <PaymentsSection
-              installments={installments}
-              onAdd={handleAddInstallment}
-              onUpdate={handleUpdateInstallment}
-              onRemove={handleRemoveInstallment}
-            />
-          </div>
-
-          <div>
             <InvoiceSummaryCard
               subtotal={subtotal}
               vatRate={vatRate}
@@ -472,6 +515,36 @@ export default function InvoiceDetail() {
               dueAmount={dueAmount}
               onVatRateChange={setVatRate}
             />
+
+            <PaymentsSection
+              installments={installments}
+              onAdd={handleAddInstallment}
+              onUpdate={handleUpdateInstallment}
+              onRemove={handleRemoveInstallment}
+            />
+          </div>
+
+          <div className="xl:col-span-5">
+            <div className="xl:sticky xl:top-4">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Live Preview
+                </h3>
+              </div>
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border max-h-[calc(100vh-8rem)] overflow-y-auto">
+                <div className="origin-top-left scale-[0.7] xl:scale-[0.55] 2xl:scale-[0.7] w-[210mm]">
+                  <ThemedInvoiceDocument
+                    invoice={previewInvoice}
+                    items={previewItems}
+                    installments={previewInstallments}
+                    company={selectedCompany}
+                    theme={activeTheme}
+                    branding={branding}
+                    layout={invoiceLayout}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

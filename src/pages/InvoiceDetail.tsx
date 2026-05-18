@@ -80,9 +80,27 @@ export default function InvoiceDetail() {
     isNew ? undefined : id
   );
   const { data: companies = [], isLoading: companiesLoading } = useCompanies();
+  const { data: allInvoices = [] } = useInvoices();
   const { data: nextInvoiceNumber } = useNextInvoiceNumber();
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
+
+  // Unique past clients (for autofill dropdown)
+  const pastClients = useMemo(() => {
+    const seen = new Map<string, { key: string; name: string; email?: string; phone?: string; address?: string }>();
+    for (const inv of allInvoices) {
+      const key = `${(inv.client_name || "").trim().toLowerCase()}|${(inv.client_phone || "").trim()}`;
+      if (!inv.client_name || seen.has(key)) continue;
+      seen.set(key, {
+        key,
+        name: inv.client_name,
+        email: inv.client_email || undefined,
+        phone: inv.client_phone || undefined,
+        address: inv.client_address || undefined,
+      });
+    }
+    return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [allInvoices]);
 
   // Track whether we already populated the form from the fetched invoice
   const [populated, setPopulated] = useState(false);

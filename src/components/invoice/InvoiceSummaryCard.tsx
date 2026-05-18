@@ -1,7 +1,15 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "./types";
+import { formatCurrency, type InvoiceStatus } from "./types";
+import { numberToWords } from "@/lib/numberToWords";
 
 interface Props {
   subtotal: number;
@@ -10,7 +18,12 @@ interface Props {
   totalAmount: number;
   paidAmount: number;
   dueAmount: number;
+  status: InvoiceStatus;
+  statusOverride: InvoiceStatus | "auto";
+  amountInWords: string;
   onVatRateChange: (rate: number) => void;
+  onStatusOverrideChange: (s: InvoiceStatus | "auto") => void;
+  onAmountInWordsChange: (v: string) => void;
 }
 
 export function InvoiceSummaryCard({
@@ -20,10 +33,17 @@ export function InvoiceSummaryCard({
   totalAmount,
   paidAmount,
   dueAmount,
+  status,
+  statusOverride,
+  amountInWords,
   onVatRateChange,
+  onStatusOverrideChange,
+  onAmountInWordsChange,
 }: Props) {
+  const autoWords = `${numberToWords(totalAmount)} Taka Only`;
+
   return (
-    <div className="card-elevated p-5 space-y-4 lg:sticky lg:top-6">
+    <div className="card-elevated p-5 space-y-4">
       <h2 className="text-lg font-semibold text-foreground">Summary</h2>
 
       <div className="space-y-3 text-sm">
@@ -34,7 +54,7 @@ export function InvoiceSummaryCard({
 
         <div className="flex items-center gap-2">
           <Label htmlFor="vatRate" className="text-muted-foreground">
-            VAT %
+            Tax %
           </Label>
           <Input
             id="vatRate"
@@ -74,6 +94,39 @@ export function InvoiceSummaryCard({
         >
           <span>{dueAmount > 0 ? "Due" : "Fully Paid"}</span>
           <span className="tabular-nums">{formatCurrency(dueAmount)}</span>
+        </div>
+
+        {/* Status dropdown */}
+        <div className="pt-3 border-t border-border space-y-1.5">
+          <Label htmlFor="status">Status</Label>
+          <Select
+            value={statusOverride}
+            onValueChange={(v) => onStatusOverrideChange(v as InvoiceStatus | "auto")}
+          >
+            <SelectTrigger id="status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Auto ({status})</SelectItem>
+              <SelectItem value="unpaid">Unpaid</SelectItem>
+              <SelectItem value="partial">Partial</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Amount in Words */}
+        <div className="pt-3 border-t border-border space-y-1.5">
+          <Label htmlFor="amountInWords">Amount in Words</Label>
+          <Input
+            id="amountInWords"
+            value={amountInWords}
+            onChange={(e) => onAmountInWordsChange(e.target.value)}
+            placeholder={autoWords}
+          />
+          <p className="text-xs text-muted-foreground">
+            Auto-generated if empty: {autoWords}
+          </p>
         </div>
       </div>
     </div>

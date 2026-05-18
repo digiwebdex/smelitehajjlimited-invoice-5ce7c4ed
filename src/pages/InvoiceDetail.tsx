@@ -9,8 +9,13 @@ import {
   useUpdateInvoice,
   useNextInvoiceNumber,
 } from "@/hooks/useInvoices";
-import { useCompanies } from "@/hooks/useCompanies";
+import { useCompanies, useCompany } from "@/hooks/useCompanies";
+import { useTheme } from "@/hooks/useTheme";
+import { useBranding } from "@/hooks/useBranding";
+import { useEffectiveInvoiceLayout } from "@/hooks/useInvoiceLayout";
 import { useToast } from "@/hooks/use-toast";
+import { ThemedInvoiceDocument } from "@/components/invoice/ThemedInvoiceDocument";
+import { defaultTheme } from "@/types/theme";
 
 import {
   InvoiceFormHeader,

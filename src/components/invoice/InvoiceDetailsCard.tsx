@@ -1,4 +1,4 @@
-import { FileText } from "lucide-react";
+import { FileText, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +15,14 @@ interface Company {
   name: string;
 }
 
+export interface PastClient {
+  key: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
 interface Props {
   invoiceNumber: string;
   companyId: string;
@@ -25,8 +33,10 @@ interface Props {
   clientAddress: string;
   notes: string;
   companies: Company[];
+  pastClients?: PastClient[];
   errors: Record<string, string | undefined>;
   onChange: (field: string, value: string) => void;
+  onSelectPastClient?: (client: PastClient) => void;
 }
 
 export function InvoiceDetailsCard({
@@ -39,8 +49,10 @@ export function InvoiceDetailsCard({
   clientAddress,
   notes,
   companies,
+  pastClients = [],
   errors,
   onChange,
+  onSelectPastClient,
 }: Props) {
   return (
     <div className="card-elevated p-5 space-y-5">
@@ -99,12 +111,39 @@ export function InvoiceDetailsCard({
       </div>
 
       {/* Client info */}
-      <h3 className="text-sm font-medium text-foreground pt-4 border-t border-border">
+      <h3 className="text-sm font-medium text-foreground pt-4 border-t border-border flex items-center gap-2">
+        <Users className="h-4 w-4 text-accent" />
         Client Information
       </h3>
+
+      {pastClients.length > 0 && onSelectPastClient && (
+        <div className="space-y-1.5">
+          <Label>Select Customer (or type manually below)</Label>
+          <Select
+            value=""
+            onValueChange={(v) => {
+              const c = pastClients.find((p) => p.key === v);
+              if (c) onSelectPastClient(c);
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select existing customer..." />
+            </SelectTrigger>
+            <SelectContent>
+              {pastClients.map((c) => (
+                <SelectItem key={c.key} value={c.key}>
+                  {c.name}
+                  {c.phone ? ` — ${c.phone}` : c.email ? ` — ${c.email}` : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="clientName">Name *</Label>
+          <Label htmlFor="clientName">Customer Name *</Label>
           <Input
             id="clientName"
             value={clientName}
@@ -117,13 +156,13 @@ export function InvoiceDetailsCard({
           )}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="clientEmail">Email</Label>
+          <Label htmlFor="clientEmail">Customer Email</Label>
           <Input
             id="clientEmail"
             type="email"
             value={clientEmail}
             onChange={(e) => onChange("clientEmail", e.target.value)}
-            placeholder="client@example.com"
+            placeholder="Email"
             className={errors.clientEmail ? "border-destructive" : ""}
           />
           {errors.clientEmail && (
@@ -131,16 +170,16 @@ export function InvoiceDetailsCard({
           )}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="clientPhone">Phone</Label>
+          <Label htmlFor="clientPhone">Customer Phone</Label>
           <Input
             id="clientPhone"
             value={clientPhone}
             onChange={(e) => onChange("clientPhone", e.target.value)}
-            placeholder="+880 1XXX XXXXXX"
+            placeholder="Phone"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="clientAddress">Address</Label>
+          <Label htmlFor="clientAddress">Customer Address</Label>
           <Input
             id="clientAddress"
             value={clientAddress}

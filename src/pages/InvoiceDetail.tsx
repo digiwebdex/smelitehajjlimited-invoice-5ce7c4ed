@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import {
   useInvoice,
+  useInvoices,
   useCreateInvoice,
   useUpdateInvoice,
   useNextInvoiceNumber,
@@ -79,9 +80,27 @@ export default function InvoiceDetail() {
     isNew ? undefined : id
   );
   const { data: companies = [], isLoading: companiesLoading } = useCompanies();
+  const { data: allInvoices = [] } = useInvoices();
   const { data: nextInvoiceNumber } = useNextInvoiceNumber();
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
+
+  // Unique past clients (for autofill dropdown)
+  const pastClients = useMemo(() => {
+    const seen = new Map<string, { key: string; name: string; email?: string; phone?: string; address?: string }>();
+    for (const inv of allInvoices) {
+      const key = `${(inv.client_name || "").trim().toLowerCase()}|${(inv.client_phone || "").trim()}`;
+      if (!inv.client_name || seen.has(key)) continue;
+      seen.set(key, {
+        key,
+        name: inv.client_name,
+        email: inv.client_email || undefined,
+        phone: inv.client_phone || undefined,
+        address: inv.client_address || undefined,
+      });
+    }
+    return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [allInvoices]);
 
   // Track whether we already populated the form from the fetched invoice
   const [populated, setPopulated] = useState(false);
@@ -101,6 +120,8 @@ export default function InvoiceDetail() {
   ]);
   const [installments, setInstallments] = useState<LocalInstallment[]>([]);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
+  const [statusOverride, setStatusOverride] = useState<InvoiceStatus | "auto">("auto");
+  const [amountInWords, setAmountInWords] = useState("");
 
   // ── Derived calculations (use raw items, don't create new objects) ──
   const subtotal = useMemo(
@@ -114,12 +135,13 @@ export default function InvoiceDetail() {
     [installments]
   );
   const dueAmount = totalAmount - paidAmount;
-  const status: InvoiceStatus =
+  const autoStatus: InvoiceStatus =
     paidAmount >= totalAmount && totalAmount > 0
       ? "paid"
       : paidAmount > 0
       ? "partial"
       : "unpaid";
+  const status: InvoiceStatus = statusOverride === "auto" ? autoStatus : statusOverride;
 
   // ── Populate new invoice number ──
   useEffect(() => {
@@ -494,8 +516,15 @@ export default function InvoiceDetail() {
               clientAddress={clientAddress}
               notes={notes}
               companies={companies}
+              pastClients={pastClients}
               errors={errors}
               onChange={handleFieldChange}
+              onSelectPastClient={(c) => {
+                setClientName(c.name);
+                setClientEmail(c.email || "");
+                setClientPhone(c.phone || "");
+                setClientAddress(c.address || "");
+              }}
             />
 
             <LineItemsSection
@@ -513,7 +542,12 @@ export default function InvoiceDetail() {
               totalAmount={totalAmount}
               paidAmount={paidAmount}
               dueAmount={dueAmount}
+              status={status}
+              statusOverride={statusOverride}
+              amountInWords={amountInWords}
               onVatRateChange={setVatRate}
+              onStatusOverrideChange={setStatusOverride}
+              onAmountInWordsChange={setAmountInWords}
             />
 
             <PaymentsSection
@@ -522,6 +556,18 @@ export default function InvoiceDetail() {
               onUpdate={handleUpdateInstallment}
               onRemove={handleRemoveInstallment}
             />
+
+            {/* Full-width orange Save button */}
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="w-full h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-md"
+            >
+              {isSaving ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : null}
+              Save Invoice
+            </Button>
           </div>
 
           <div className="xl:col-span-5">

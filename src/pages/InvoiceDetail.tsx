@@ -504,8 +504,8 @@ export default function InvoiceDetail() {
           onSave={handleSave}
         />
 
-        <div className="grid gap-6 xl:grid-cols-12">
-          <div className="xl:col-span-7 space-y-6">
+        <div className="grid gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-8 space-y-6">
             <InvoiceDetailsCard
               invoiceNumber={invoiceNumber}
               companyId={companyId}
@@ -535,61 +535,30 @@ export default function InvoiceDetail() {
               onRemove={handleRemoveItem}
             />
 
-            <InvoiceSummaryCard
-              subtotal={subtotal}
-              vatRate={vatRate}
-              vatAmount={vatAmount}
-              totalAmount={totalAmount}
-              paidAmount={paidAmount}
-              dueAmount={dueAmount}
-              status={status}
-              statusOverride={statusOverride}
-              amountInWords={amountInWords}
-              onVatRateChange={setVatRate}
-              onStatusOverrideChange={setStatusOverride}
-              onAmountInWordsChange={setAmountInWords}
-            />
-
             <PaymentsSection
               installments={installments}
               onAdd={handleAddInstallment}
               onUpdate={handleUpdateInstallment}
               onRemove={handleRemoveInstallment}
             />
-
-            {/* Full-width orange Save button */}
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="w-full h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-md"
-            >
-              {isSaving ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : null}
-              Save Invoice
-            </Button>
           </div>
 
-          <div className="xl:col-span-5">
-            <div className="xl:sticky xl:top-4">
-              <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Live Preview
-                </h3>
-              </div>
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border max-h-[calc(100vh-8rem)] overflow-auto">
-                <div style={{ zoom: 0.55 }}>
-                  <ThemedInvoiceDocument
-                    invoice={previewInvoice}
-                    items={previewItems}
-                    installments={previewInstallments}
-                    company={selectedCompany}
-                    theme={activeTheme}
-                    branding={branding}
-                    layout={invoiceLayout}
-                  />
-                </div>
-              </div>
+          <div className="lg:col-span-4">
+            <div className="lg:sticky lg:top-4">
+              <InvoiceSummaryCard
+                subtotal={subtotal}
+                vatRate={vatRate}
+                vatAmount={vatAmount}
+                totalAmount={totalAmount}
+                paidAmount={paidAmount}
+                dueAmount={dueAmount}
+                status={status}
+                statusOverride={statusOverride}
+                amountInWords={amountInWords}
+                onVatRateChange={setVatRate}
+                onStatusOverrideChange={setStatusOverride}
+                onAmountInWordsChange={setAmountInWords}
+              />
             </div>
           </div>
         </div>

@@ -1,0 +1,26 @@
+.invoice-print-area {
+  background: #ffffff;
+}
+
+.invoice-print-area .invoice-document {
+  width: 210mm;
+  min-height: 297mm;
+  max-width: 210mm;
+  box-sizing: border-box;
+}
+
+@media screen {
+  .invoice-print-area {
+    width: fit-content;
+    max-width: 100%;
+  }
+}
+
+@media print {
+  .invoice-print-area,
+  .invoice-print-area .invoice-document {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    max-width: 210mm !important;
+  }
+}

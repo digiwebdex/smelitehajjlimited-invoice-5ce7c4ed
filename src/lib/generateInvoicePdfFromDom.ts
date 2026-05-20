@@ -1,18 +1,16 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-// Standard A4 page margins (mm) — must match @media print in index.css
-const MARGIN_TOP_MM = 10;
-const MARGIN_BOTTOM_MM = 10;
-const MARGIN_LEFT_MM = 10;
-const MARGIN_RIGHT_MM = 10;
+// Full A4 page size in millimeters; document padding provides page margins.
+const A4_WIDTH_MM = 210;
+const A4_HEIGHT_MM = 297;
 const PAGE_BREAK_SAFETY_MM = 1.5;
 
 /**
  * Find safe Y positions (in px) where the page can be split without cutting
  * elements (rows, footer block, headings, images, etc.) in half.
  */
-const getBreakpointsFromDom = (element: HTMLElement, pixelsPerMm: number): number[] => {
+const getBreakpointsFromDom = (element: HTMLElement): number[] => {
   const rootRect = element.getBoundingClientRect();
   const selectors = [
     "tbody tr",
@@ -30,7 +28,7 @@ const getBreakpointsFromDom = (element: HTMLElement, pixelsPerMm: number): numbe
 
   // Atomic blocks that must NEVER be split across pages. We collect their
   // [top, bottom] ranges and exclude any breakpoint candidate strictly
-  // inside them — the only valid splits are at their top or bottom edges.
+  // inside them â€” the only valid splits are at their top or bottom edges.
   const atomicNodes = element.querySelectorAll<HTMLElement>(
     "[data-pdf-footer], .invoice-keep-together"
   );
@@ -58,11 +56,11 @@ const getBreakpointsFromDom = (element: HTMLElement, pixelsPerMm: number): numbe
     const bottom = rect.bottom - rootRect.top;
     if (rect.height <= 0) return;
 
-    const topMm = Math.max(0, Math.round(top * pixelsPerMm) / pixelsPerMm);
-    const bottomMm = Math.max(0, Math.round(bottom * pixelsPerMm) / pixelsPerMm);
+    const topPx = Math.max(0, Math.round(top));
+    const bottomPx = Math.max(0, Math.round(bottom));
 
-    if (!isInsideAtomic(topMm)) positions.add(topMm);
-    if (!isInsideAtomic(bottomMm)) positions.add(bottomMm);
+    if (!isInsideAtomic(topPx)) positions.add(topPx);
+    if (!isInsideAtomic(bottomPx)) positions.add(bottomPx);
   });
 
   return Array.from(positions).sort((a, b) => a - b);
@@ -98,7 +96,7 @@ const chooseSliceHeightPx = (
 /**
  * Capture an element as a multi-page A4 PDF that mirrors the on-screen /
  * print layout exactly. The footer flows naturally after the table, just
- * like in browser print — no special bottom pinning.
+ * like in browser print â€” no special bottom pinning.
  */
 export async function generateInvoicePdfFromDom(
   element: HTMLElement,
@@ -118,22 +116,22 @@ export async function generateInvoicePdfFromDom(
   const pdfWidth = pdf.internal.pageSize.getWidth();
   const pdfHeight = pdf.internal.pageSize.getHeight();
 
-  const contentWidthMm = pdfWidth - MARGIN_LEFT_MM - MARGIN_RIGHT_MM;
-  const contentHeightMm = pdfHeight - MARGIN_TOP_MM - MARGIN_BOTTOM_MM;
-  const usableContentHeightMm = contentHeightMm - PAGE_BREAK_SAFETY_MM;
+  const pageWidthMm = pdfWidth || A4_WIDTH_MM;
+  const pageHeightMm = pdfHeight || A4_HEIGHT_MM;
+  const usablePageHeightMm = pageHeightMm - PAGE_BREAK_SAFETY_MM;
 
-  const pixelsPerMm = canvas.width / contentWidthMm;
+  const pixelsPerMm = canvas.width / pageWidthMm;
   const totalHeightMm = canvas.height / pixelsPerMm;
 
   // Single page case
-  if (totalHeightMm <= contentHeightMm + 2) {
+  if (totalHeightMm <= pageHeightMm + 2) {
     pdf.addImage(
       canvas.toDataURL("image/jpeg", 0.98),
       "JPEG",
-      MARGIN_LEFT_MM,
-      MARGIN_TOP_MM,
-      contentWidthMm,
-      totalHeightMm,
+      0,
+      0,
+      pageWidthMm,
+      Math.min(totalHeightMm, pageHeightMm),
       undefined,
       "FAST"
     );
@@ -143,9 +141,8 @@ export async function generateInvoicePdfFromDom(
   }
 
   // Multi-page: slice respecting natural element boundaries
-  const breakpointsMm = getBreakpointsFromDom(element, pixelsPerMm);
-  const breakpointsPx = breakpointsMm.map((p) => Math.round(p * pixelsPerMm));
-  const pageHeightPx = Math.floor(usableContentHeightMm * pixelsPerMm);
+  const breakpointsPx = getBreakpointsFromDom(element);
+  const pageHeightPx = Math.floor(usablePageHeightMm * pixelsPerMm);
   const minSliceHeightPx = Math.floor(Math.max(25, 18 * pixelsPerMm));
 
   let sourceY = 0;
@@ -182,9 +179,9 @@ export async function generateInvoicePdfFromDom(
     pdf.addImage(
       pageCanvas.toDataURL("image/jpeg", 0.98),
       "JPEG",
-      MARGIN_LEFT_MM,
-      MARGIN_TOP_MM,
-      contentWidthMm,
+      0,
+      0,
+      pageWidthMm,
       sliceHeightPx / pixelsPerMm,
       undefined,
       "FAST"

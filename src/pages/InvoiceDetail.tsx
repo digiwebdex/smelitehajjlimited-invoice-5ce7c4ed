@@ -15,7 +15,6 @@ import { useTheme } from "@/hooks/useTheme";
 import { useBranding } from "@/hooks/useBranding";
 import { useEffectiveInvoiceLayout } from "@/hooks/useInvoiceLayout";
 import { useToast } from "@/hooks/use-toast";
-import { ThemedInvoiceDocument } from "@/components/invoice/ThemedInvoiceDocument";
 import { defaultTheme } from "@/types/theme";
 
 import {
@@ -24,6 +23,7 @@ import {
   LineItemsSection,
   PaymentsSection,
   InvoiceSummaryCard,
+  InvoiceA4Preview,
   invoiceFormSchema,
   lineItemSchema,
   type LocalItem,
@@ -47,7 +47,7 @@ function createEmptyItem(): LocalItem {
 function toDateInputValue(value: unknown): string {
   if (!value) return "";
   const str = String(value);
-  // Direct extraction – works for "2026-03-03", "2026-03-03T00:00:00.000Z", etc.
+  // Direct extraction â€“ works for "2026-03-03", "2026-03-03T00:00:00.000Z", etc.
   const match = str.match(/(\d{4})-(\d{2})-(\d{2})/);
   if (match) return `${match[1]}-${match[2]}-${match[3]}`;
   // Fallback: Date constructor
@@ -67,9 +67,9 @@ function toNumber(v: unknown, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
-// ——————————————————————————————————————————————
+// â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
 // Main Page
-// ——————————————————————————————————————————————
+// â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
 export default function InvoiceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -123,7 +123,7 @@ export default function InvoiceDetail() {
   const [statusOverride, setStatusOverride] = useState<InvoiceStatus | "auto">("auto");
   const [amountInWords, setAmountInWords] = useState("");
 
-  // ── Derived calculations (use raw items, don't create new objects) ──
+  // â”€â”€ Derived calculations (use raw items, don't create new objects) â”€â”€
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + toNumber(it.qty, 1) * toNumber(it.unitPrice, 0), 0),
     [items]
@@ -143,12 +143,12 @@ export default function InvoiceDetail() {
       : "unpaid";
   const status: InvoiceStatus = statusOverride === "auto" ? autoStatus : statusOverride;
 
-  // ── Populate new invoice number ──
+  // â”€â”€ Populate new invoice number â”€â”€
   useEffect(() => {
     if (isNew && nextInvoiceNumber) setInvoiceNumber(nextInvoiceNumber);
   }, [isNew, nextInvoiceNumber]);
 
-  // ── Reset form when switching between invoices/routes ──
+  // â”€â”€ Reset form when switching between invoices/routes â”€â”€
   useEffect(() => {
     setPopulated(false);
     setErrors({});
@@ -161,6 +161,8 @@ export default function InvoiceDetail() {
     setVatRate(0);
     setItems([createEmptyItem()]);
     setInstallments([]);
+    setStatusOverride("auto");
+    setAmountInWords("");
 
     if (isNew) {
       setInvoiceDate(TODAY);
@@ -172,14 +174,14 @@ export default function InvoiceDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
-  // ── Set invoice number for new invoices separately ──
+  // â”€â”€ Set invoice number for new invoices separately â”€â”€
   useEffect(() => {
     if (isNew && nextInvoiceNumber) {
       setInvoiceNumber(nextInvoiceNumber);
     }
   }, [isNew, nextInvoiceNumber]);
 
-  // ── Populate form from existing invoice (only for the matching route id) ──
+  // â”€â”€ Populate form from existing invoice (only for the matching route id) â”€â”€
   useEffect(() => {
     if (!existingInvoice || populated || existingInvoice.id !== id) return;
 
@@ -198,6 +200,7 @@ export default function InvoiceDetail() {
     );
 
     setVatRate(toNumber(existingInvoice.vat_rate, 0));
+    setStatusOverride(existingInvoice.status);
 
     setItems(
       existingInvoice.items?.length
@@ -229,7 +232,7 @@ export default function InvoiceDetail() {
     setPopulated(true);
   }, [existingInvoice, populated, id]);
 
-  // ── Handlers ──
+  // â”€â”€ Handlers â”€â”€
   const handleFieldChange = useCallback((field: string, value: string) => {
     const map: Record<string, (v: string) => void> = {
       invoiceNumber: setInvoiceNumber,
@@ -259,7 +262,7 @@ export default function InvoiceDetail() {
         prev.map((item) => {
           if (item.id !== itemId) return item;
 
-          // Clone — do NOT normalize, so local string state in child is not disturbed
+          // Clone â€” do NOT normalize, so local string state in child is not disturbed
           const updated = { ...item };
 
           if (field === "title") {
@@ -313,7 +316,7 @@ export default function InvoiceDetail() {
     []
   );
 
-  // ── Save ──
+  // â”€â”€ Save â”€â”€
   const handleSave = async () => {
     const newErrors: Record<string, string | undefined> = {};
 
@@ -334,7 +337,7 @@ export default function InvoiceDetail() {
       });
     }
 
-    // Validate items — use normalized values for validation
+    // Validate items â€” use normalized values for validation
     items.forEach((item, idx) => {
       const normalized = {
         id: item.id,
@@ -407,16 +410,36 @@ export default function InvoiceDetail() {
     }
   };
 
-  // ── Loading / not found ──
+  // â”€â”€ Loading / not found â”€â”€
   const isLoading = invoiceLoading || companiesLoading;
   const isSaving = createInvoice.isPending || updateInvoice.isPending;
 
-  // ── Live preview data ──
+  // â”€â”€ Live preview data â”€â”€
   const { data: selectedCompany } = useCompany(companyId || undefined);
   const { data: theme } = useTheme();
   const { data: branding } = useBranding();
   const { layout: invoiceLayout } = useEffectiveInvoiceLayout(companyId || undefined);
   const activeTheme = theme || defaultTheme;
+  const previewCompany = useMemo(
+    () =>
+      selectedCompany
+        ? {
+            name: selectedCompany.name,
+            tagline: selectedCompany.tagline,
+            logo_url: selectedCompany.logo_url,
+            email: selectedCompany.email,
+            phone: selectedCompany.phone,
+            address: selectedCompany.address,
+            address_line1: selectedCompany.address_line1,
+            address_line2: selectedCompany.address_line2,
+            website: selectedCompany.website,
+            thank_you_text: selectedCompany.thank_you_text,
+            show_qr_code: selectedCompany.show_qr_code,
+            footer_alignment: selectedCompany.footer_alignment,
+          }
+        : null,
+    [selectedCompany]
+  );
 
   const previewInvoice = useMemo(
     () => ({
@@ -504,8 +527,8 @@ export default function InvoiceDetail() {
           onSave={handleSave}
         />
 
-        <div className="grid gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-8 space-y-6">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(420px,520px)]">
+          <div className="space-y-6">
             <InvoiceDetailsCard
               invoiceNumber={invoiceNumber}
               companyId={companyId}
@@ -541,26 +564,39 @@ export default function InvoiceDetail() {
               onUpdate={handleUpdateInstallment}
               onRemove={handleRemoveInstallment}
             />
+
+            <InvoiceSummaryCard
+              subtotal={subtotal}
+              vatRate={vatRate}
+              vatAmount={vatAmount}
+              totalAmount={totalAmount}
+              paidAmount={paidAmount}
+              dueAmount={dueAmount}
+              status={status}
+              statusOverride={statusOverride}
+              amountInWords={amountInWords}
+              onVatRateChange={setVatRate}
+              onStatusOverrideChange={setStatusOverride}
+              onAmountInWordsChange={setAmountInWords}
+            />
           </div>
 
-          <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-4">
-              <InvoiceSummaryCard
-                subtotal={subtotal}
-                vatRate={vatRate}
-                vatAmount={vatAmount}
-                totalAmount={totalAmount}
-                paidAmount={paidAmount}
-                dueAmount={dueAmount}
-                status={status}
-                statusOverride={statusOverride}
-                amountInWords={amountInWords}
-                onVatRateChange={setVatRate}
-                onStatusOverrideChange={setStatusOverride}
-                onAmountInWordsChange={setAmountInWords}
-              />
+          <aside className="xl:sticky xl:top-4 h-fit space-y-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Live A4 Preview</h2>
+              <p className="text-sm text-muted-foreground">Updates while you edit.</p>
             </div>
-          </div>
+            <InvoiceA4Preview
+              className="rounded-lg border bg-neutral-100 p-3 max-h-[calc(100vh-7rem)]"
+              invoice={previewInvoice}
+              items={previewItems}
+              installments={previewInstallments}
+              company={previewCompany}
+              theme={activeTheme}
+              branding={branding}
+              layout={invoiceLayout}
+            />
+          </aside>
         </div>
       </div>
     </AppLayout>

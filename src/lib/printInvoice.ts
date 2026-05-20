@@ -36,22 +36,29 @@ export function printInvoiceFromNode(node: HTMLElement): void {
     <meta charset="utf-8" />
     ${styleNodes}
     <style>
-      @page { size: A4 portrait; margin: 12mm; }
+      @page { size: A4 portrait; margin: 0; }
       html, body {
         margin: 0;
         padding: 0;
         background: #ffffff;
+        width: 210mm;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
       body * { visibility: visible !important; }
       .invoice-print-area {
         position: static !important;
-        width: 100% !important;
+        width: 210mm !important;
+        min-height: 297mm !important;
         max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
       }
       .invoice-print-area .invoice-document {
-        padding: 0 !important;
+        width: 210mm !important;
+        min-height: 297mm !important;
+        max-width: 210mm !important;
         box-shadow: none !important;
         border-radius: 0 !important;
       }

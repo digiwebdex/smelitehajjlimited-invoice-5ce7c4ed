@@ -786,9 +786,9 @@ export default function InvoiceDetail() {
             </Button>
           </section>
 
-          <aside className="xl:sticky xl:top-6 h-fit">
+          <aside className="lg:sticky lg:top-6 h-fit">
             <InvoiceA4Preview
-              className="rounded-md bg-neutral-100 p-3 max-h-[calc(100vh-4rem)]"
+              className="rounded-md bg-neutral-100 p-3 max-h-[calc(100vh-4rem)] overflow-auto"
               invoice={previewInvoice}
               items={previewItems}
               installments={previewInstallments}

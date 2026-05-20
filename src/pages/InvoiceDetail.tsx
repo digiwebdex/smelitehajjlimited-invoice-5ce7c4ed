@@ -509,7 +509,7 @@ export default function InvoiceDetail() {
           </h1>
         </div>
 
-        <div className="grid gap-8 xl:grid-cols-[minmax(760px,1fr)_minmax(430px,560px)]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,820px)]">
           <section className="rounded-md border bg-white p-5 shadow-sm">
             <h2 className="mb-5 text-xl font-bold text-foreground">Invoice Details</h2>
 
@@ -786,9 +786,9 @@ export default function InvoiceDetail() {
             </Button>
           </section>
 
-          <aside className="xl:sticky xl:top-6 h-fit">
+          <aside className="lg:sticky lg:top-6 h-fit">
             <InvoiceA4Preview
-              className="rounded-md bg-neutral-100 p-3 max-h-[calc(100vh-4rem)]"
+              className="rounded-md bg-neutral-100 p-3 max-h-[calc(100vh-4rem)] overflow-auto"
               invoice={previewInvoice}
               items={previewItems}
               installments={previewInstallments}

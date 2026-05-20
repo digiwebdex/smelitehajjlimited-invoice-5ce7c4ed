@@ -22,14 +22,15 @@ export async function renderInvoicePdfBlob(args: Omit<RenderArgs, "filename">): 
   host.style.position = "fixed";
   host.style.left = "-10000px";
   host.style.top = "0";
-  host.style.width = "794px";
+  host.style.width = "210mm";
+  host.style.minHeight = "297mm";
   host.style.background = "#ffffff";
   host.style.zIndex = "-1";
   document.body.appendChild(host);
 
   const root = createRoot(host);
   root.render(
-    <div className="invoice-print-area" style={{ width: "794px" }}>
+    <div className="invoice-print-area" style={{ width: "210mm", minHeight: "297mm" }}>
       <ThemedInvoiceDocument
         invoice={invoice}
         items={items}
@@ -70,15 +71,16 @@ export async function renderAndDownloadInvoicePdf(args: RenderArgs): Promise<voi
   host.style.position = "fixed";
   host.style.left = "-10000px";
   host.style.top = "0";
-  // A4 width at 96dpi = 210mm ≈ 794px
-  host.style.width = "794px";
+  // Render at real A4 dimensions so PDF output matches browser print.
+  host.style.width = "210mm";
+  host.style.minHeight = "297mm";
   host.style.background = "#ffffff";
   host.style.zIndex = "-1";
   document.body.appendChild(host);
 
   const root = createRoot(host);
   root.render(
-    <div className="invoice-print-area" style={{ width: "794px" }}>
+    <div className="invoice-print-area" style={{ width: "210mm", minHeight: "297mm" }}>
       <ThemedInvoiceDocument
         invoice={invoice}
         items={items}

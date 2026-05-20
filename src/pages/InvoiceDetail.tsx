@@ -1,8 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   useInvoice,
   useInvoices,
@@ -18,14 +28,11 @@ import { useToast } from "@/hooks/use-toast";
 import { defaultTheme } from "@/types/theme";
 
 import {
-  InvoiceFormHeader,
-  InvoiceDetailsCard,
-  LineItemsSection,
-  PaymentsSection,
-  InvoiceSummaryCard,
   InvoiceA4Preview,
+  PaymentCard,
   invoiceFormSchema,
   lineItemSchema,
+  formatCurrency,
   type LocalItem,
   type LocalInstallment,
   type InvoiceStatus,
@@ -47,10 +54,8 @@ function createEmptyItem(): LocalItem {
 function toDateInputValue(value: unknown): string {
   if (!value) return "";
   const str = String(value);
-  // Direct extraction â€“ works for "2026-03-03", "2026-03-03T00:00:00.000Z", etc.
   const match = str.match(/(\d{4})-(\d{2})-(\d{2})/);
   if (match) return `${match[1]}-${match[2]}-${match[3]}`;
-  // Fallback: Date constructor
   try {
     const d = new Date(str);
     if (!isNaN(d.getTime())) {
@@ -67,9 +72,6 @@ function toNumber(v: unknown, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
-// â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
-// Main Page
-// â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
 export default function InvoiceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -85,7 +87,6 @@ export default function InvoiceDetail() {
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
 
-  // Unique past clients (for autofill dropdown)
   const pastClients = useMemo(() => {
     const seen = new Map<string, { key: string; name: string; email?: string; phone?: string; address?: string }>();
     for (const inv of allInvoices) {
@@ -102,10 +103,7 @@ export default function InvoiceDetail() {
     return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [allInvoices]);
 
-  // Track whether we already populated the form from the fetched invoice
   const [populated, setPopulated] = useState(false);
-
-  // Form state
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [companyId, setCompanyId] = useState("");
   const [clientName, setClientName] = useState("");
@@ -115,15 +113,12 @@ export default function InvoiceDetail() {
   const [notes, setNotes] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(isNew ? TODAY : "");
   const [vatRate, setVatRate] = useState(0);
-  const [items, setItems] = useState<LocalItem[]>([
-    createEmptyItem(),
-  ]);
+  const [items, setItems] = useState<LocalItem[]>([createEmptyItem()]);
   const [installments, setInstallments] = useState<LocalInstallment[]>([]);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [statusOverride, setStatusOverride] = useState<InvoiceStatus | "auto">("auto");
   const [amountInWords, setAmountInWords] = useState("");
 
-  // â”€â”€ Derived calculations (use raw items, don't create new objects) â”€â”€
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + toNumber(it.qty, 1) * toNumber(it.unitPrice, 0), 0),
     [items]
@@ -143,12 +138,10 @@ export default function InvoiceDetail() {
       : "unpaid";
   const status: InvoiceStatus = statusOverride === "auto" ? autoStatus : statusOverride;
 
-  // â”€â”€ Populate new invoice number â”€â”€
   useEffect(() => {
     if (isNew && nextInvoiceNumber) setInvoiceNumber(nextInvoiceNumber);
   }, [isNew, nextInvoiceNumber]);
 
-  // â”€â”€ Reset form when switching between invoices/routes â”€â”€
   useEffect(() => {
     setPopulated(false);
     setErrors({});
@@ -174,14 +167,12 @@ export default function InvoiceDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
-  // â”€â”€ Set invoice number for new invoices separately â”€â”€
   useEffect(() => {
     if (isNew && nextInvoiceNumber) {
       setInvoiceNumber(nextInvoiceNumber);
     }
   }, [isNew, nextInvoiceNumber]);
 
-  // â”€â”€ Populate form from existing invoice (only for the matching route id) â”€â”€
   useEffect(() => {
     if (!existingInvoice || populated || existingInvoice.id !== id) return;
 
@@ -192,13 +183,11 @@ export default function InvoiceDetail() {
     setClientPhone(existingInvoice.client_phone || "");
     setClientAddress(existingInvoice.client_address || "");
     setNotes(existingInvoice.notes || "");
-
     setInvoiceDate(
       toDateInputValue(existingInvoice.invoice_date) ||
         toDateInputValue(existingInvoice.created_at) ||
         TODAY
     );
-
     setVatRate(toNumber(existingInvoice.vat_rate, 0));
     setStatusOverride(existingInvoice.status);
 
@@ -232,7 +221,6 @@ export default function InvoiceDetail() {
     setPopulated(true);
   }, [existingInvoice, populated, id]);
 
-  // â”€â”€ Handlers â”€â”€
   const handleFieldChange = useCallback((field: string, value: string) => {
     const map: Record<string, (v: string) => void> = {
       invoiceNumber: setInvoiceNumber,
@@ -261,8 +249,6 @@ export default function InvoiceDetail() {
       setItems((prev) =>
         prev.map((item) => {
           if (item.id !== itemId) return item;
-
-          // Clone â€” do NOT normalize, so local string state in child is not disturbed
           const updated = { ...item };
 
           if (field === "title") {
@@ -276,7 +262,6 @@ export default function InvoiceDetail() {
             return updated;
           }
 
-          // Recalculate amount
           updated.amount = updated.qty * updated.unitPrice;
           return updated;
         })
@@ -316,7 +301,6 @@ export default function InvoiceDetail() {
     []
   );
 
-  // â”€â”€ Save â”€â”€
   const handleSave = async () => {
     const newErrors: Record<string, string | undefined> = {};
 
@@ -337,7 +321,6 @@ export default function InvoiceDetail() {
       });
     }
 
-    // Validate items â€” use normalized values for validation
     items.forEach((item, idx) => {
       const normalized = {
         id: item.id,
@@ -410,11 +393,9 @@ export default function InvoiceDetail() {
     }
   };
 
-  // â”€â”€ Loading / not found â”€â”€
   const isLoading = invoiceLoading || companiesLoading;
   const isSaving = createInvoice.isPending || updateInvoice.isPending;
 
-  // â”€â”€ Live preview data â”€â”€
   const { data: selectedCompany } = useCompany(companyId || undefined);
   const { data: theme } = useTheme();
   const { data: branding } = useBranding();
@@ -517,77 +498,297 @@ export default function InvoiceDetail() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in max-w-[1600px] mx-auto">
-        <InvoiceFormHeader
-          isNew={isNew}
-          invoiceNumber={invoiceNumber}
-          status={status}
-          isSaving={isSaving}
-          onBack={() => navigate("/invoices")}
-          onSave={handleSave}
-        />
+      <div className="animate-fade-in max-w-[1800px] mx-auto">
+        <div className="mb-4 flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/invoices")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          <h1 className="text-2xl font-bold text-foreground">
+            {isNew ? "New Invoice" : "Edit Invoice"}
+          </h1>
+        </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(420px,520px)]">
-          <div className="space-y-6">
-            <InvoiceDetailsCard
-              invoiceNumber={invoiceNumber}
-              companyId={companyId}
-              invoiceDate={invoiceDate}
-              clientName={clientName}
-              clientEmail={clientEmail}
-              clientPhone={clientPhone}
-              clientAddress={clientAddress}
-              notes={notes}
-              companies={companies}
-              pastClients={pastClients}
-              errors={errors}
-              onChange={handleFieldChange}
-              onSelectPastClient={(c) => {
-                setClientName(c.name);
-                setClientEmail(c.email || "");
-                setClientPhone(c.phone || "");
-                setClientAddress(c.address || "");
-              }}
-            />
+        <div className="grid gap-8 xl:grid-cols-[minmax(760px,1fr)_minmax(430px,560px)]">
+          <section className="rounded-md border bg-white p-5 shadow-sm">
+            <h2 className="mb-5 text-xl font-bold text-foreground">Invoice Details</h2>
 
-            <LineItemsSection
-              items={items}
-              errors={errors}
-              onAdd={handleAddItem}
-              onUpdate={handleUpdateItem}
-              onRemove={handleRemoveItem}
-            />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="invoiceNumber">Invoice #</Label>
+                <Input
+                  id="invoiceNumber"
+                  value={invoiceNumber}
+                  onChange={(e) => handleFieldChange("invoiceNumber", e.target.value)}
+                  className={errors.invoiceNumber ? "border-destructive" : ""}
+                />
+                {errors.invoiceNumber && <p className="text-xs text-destructive">{errors.invoiceNumber}</p>}
+              </div>
 
-            <PaymentsSection
-              installments={installments}
-              onAdd={handleAddInstallment}
-              onUpdate={handleUpdateInstallment}
-              onRemove={handleRemoveInstallment}
-            />
-
-            <InvoiceSummaryCard
-              subtotal={subtotal}
-              vatRate={vatRate}
-              vatAmount={vatAmount}
-              totalAmount={totalAmount}
-              paidAmount={paidAmount}
-              dueAmount={dueAmount}
-              status={status}
-              statusOverride={statusOverride}
-              amountInWords={amountInWords}
-              onVatRateChange={setVatRate}
-              onStatusOverrideChange={setStatusOverride}
-              onAmountInWordsChange={setAmountInWords}
-            />
-          </div>
-
-          <aside className="xl:sticky xl:top-4 h-fit space-y-3">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Live A4 Preview</h2>
-              <p className="text-sm text-muted-foreground">Updates while you edit.</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="invoiceDate">Date</Label>
+                <Input
+                  id="invoiceDate"
+                  type="date"
+                  value={invoiceDate}
+                  onChange={(e) => handleFieldChange("invoiceDate", e.target.value)}
+                  className={errors.invoiceDate ? "border-destructive" : ""}
+                />
+                {errors.invoiceDate && <p className="text-xs text-destructive">{errors.invoiceDate}</p>}
+              </div>
             </div>
+
+            <div className="mt-4 space-y-1.5">
+              <Label>Company *</Label>
+              <Select value={companyId} onValueChange={(v) => handleFieldChange("companyId", v)}>
+                <SelectTrigger className={errors.companyId ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Select company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.companyId && <p className="text-xs text-destructive">{errors.companyId}</p>}
+            </div>
+
+            {pastClients.length > 0 && (
+              <div className="mt-4 space-y-1.5">
+                <Label>Select Customer (or type manually below)</Label>
+                <Select
+                  onValueChange={(v) => {
+                    const client = pastClients.find((p) => p.key === v);
+                    if (!client) return;
+                    setClientName(client.name);
+                    setClientEmail(client.email || "");
+                    setClientPhone(client.phone || "");
+                    setClientAddress(client.address || "");
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select customer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pastClients.map((client) => (
+                      <SelectItem key={client.key} value={client.key}>
+                        {client.name}
+                        {client.phone ? ` - ${client.phone}` : client.email ? ` - ${client.email}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="mt-4 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="clientName">Customer Name *</Label>
+                <Input
+                  id="clientName"
+                  value={clientName}
+                  onChange={(e) => handleFieldChange("clientName", e.target.value)}
+                  className={errors.clientName ? "border-destructive" : ""}
+                />
+                {errors.clientName && <p className="text-xs text-destructive">{errors.clientName}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="clientEmail">Customer Email</Label>
+                <Input
+                  id="clientEmail"
+                  type="email"
+                  value={clientEmail}
+                  onChange={(e) => handleFieldChange("clientEmail", e.target.value)}
+                  placeholder="Email"
+                  className={errors.clientEmail ? "border-destructive" : ""}
+                />
+                {errors.clientEmail && <p className="text-xs text-destructive">{errors.clientEmail}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="clientPhone">Customer Phone</Label>
+                <Input
+                  id="clientPhone"
+                  value={clientPhone}
+                  onChange={(e) => handleFieldChange("clientPhone", e.target.value)}
+                  placeholder="Phone"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="clientAddress">Customer Address</Label>
+                <Textarea
+                  id="clientAddress"
+                  value={clientAddress}
+                  onChange={(e) => handleFieldChange("clientAddress", e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground">$ Line Items</h3>
+              <Button variant="outline" size="sm" onClick={handleAddItem}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Item
+              </Button>
+            </div>
+
+            <div className="mt-3 space-y-3">
+              {items.map((item, idx) => (
+                <div key={item.id} className="rounded-md border bg-background p-4">
+                  <div className="flex gap-3">
+                    <span className="pt-2 text-sm text-muted-foreground">{idx + 1}.</span>
+                    <div className="flex-1">
+                      <Input
+                        value={item.title}
+                        onChange={(e) => handleUpdateItem(item.id, "title", e.target.value)}
+                        className={errors[`items.${idx}.title`] ? "border-destructive" : ""}
+                      />
+                      {errors[`items.${idx}.title`] && (
+                        <p className="mt-1 text-xs text-destructive">{errors[`items.${idx}.title`]}</p>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => handleRemoveItem(item.id)}
+                      disabled={items.length <= 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_160px]">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Qty</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={item.qty}
+                        onChange={(e) => handleUpdateItem(item.id, "qty", e.target.value)}
+                        className="text-center tabular-nums"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Unit Price</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={item.unitPrice}
+                        onChange={(e) => handleUpdateItem(item.id, "unitPrice", e.target.value)}
+                        className="tabular-nums"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Total</Label>
+                      <div className="flex h-10 items-center justify-end rounded-md px-3 font-bold tabular-nums">
+                        {formatCurrency(item.amount)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-2 flex justify-end text-sm">
+              <span className="text-muted-foreground">Subtotal:&nbsp;</span>
+              <span className="font-semibold tabular-nums">{formatCurrency(subtotal)}</span>
+            </div>
+
+            <div className="mt-4 space-y-1.5">
+              <Label htmlFor="taxAmount">Tax Amount</Label>
+              <Input
+                id="taxAmount"
+                type="number"
+                min={0}
+                value={Number.isFinite(vatAmount) ? Number(vatAmount.toFixed(2)) : 0}
+                onChange={(e) => {
+                  const amount = Math.max(0, toNumber(e.target.value, 0));
+                  setVatRate(subtotal > 0 ? (amount / subtotal) * 100 : 0);
+                }}
+              />
+            </div>
+
+            <div className="mt-5 flex justify-end text-lg font-bold">
+              Total: <span className="ml-2 tabular-nums">{formatCurrency(totalAmount)}</span>
+            </div>
+
+            <div className="mt-4 space-y-1.5">
+              <Label>Status</Label>
+              <Select
+                value={statusOverride}
+                onValueChange={(v) => setStatusOverride(v as InvoiceStatus | "auto")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto ({status})</SelectItem>
+                  <SelectItem value="unpaid">Unpaid</SelectItem>
+                  <SelectItem value="partial">Partial</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="mt-5 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground">Payments</h3>
+              <Button variant="outline" size="sm" onClick={handleAddInstallment}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Payment
+              </Button>
+            </div>
+            {installments.length > 0 && (
+              <div className="mt-3 space-y-3">
+                {installments.map((inst, idx) => (
+                  <PaymentCard
+                    key={inst.id}
+                    inst={inst}
+                    index={idx}
+                    onUpdate={(field, value) => handleUpdateInstallment(inst.id, field, value)}
+                    onRemove={() => handleRemoveInstallment(inst.id)}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 space-y-1.5">
+              <Label htmlFor="amountInWords">Amount in Words</Label>
+              <Input
+                id="amountInWords"
+                value={amountInWords}
+                onChange={(e) => setAmountInWords(e.target.value)}
+                placeholder="Auto-generated if empty"
+              />
+            </div>
+
+            <div className="mt-4 space-y-1.5">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => handleFieldChange("notes", e.target.value)}
+                rows={4}
+                className={errors.notes ? "border-destructive" : ""}
+              />
+              {errors.notes && <p className="text-xs text-destructive">{errors.notes}</p>}
+            </div>
+
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="mt-4 w-full bg-orange-500 text-white hover:bg-orange-600"
+            >
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Save Invoice
+            </Button>
+          </section>
+
+          <aside className="xl:sticky xl:top-6 h-fit">
             <InvoiceA4Preview
-              className="rounded-lg border bg-neutral-100 p-3 max-h-[calc(100vh-7rem)]"
+              className="rounded-md bg-neutral-100 p-3 max-h-[calc(100vh-4rem)]"
               invoice={previewInvoice}
               items={previewItems}
               installments={previewInstallments}
